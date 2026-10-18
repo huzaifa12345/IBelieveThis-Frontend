@@ -35,10 +35,10 @@ const About = () => {
         >
           <div className="col-lg-7 mb-4 mb-lg-0">
             <h1 className="fw-bold mb-3" style={{ color: '#111827' }}>
-              About <span style={{ color: 'var(--brand-primary)' }}>Charlie Bells</span>
+              About <span style={{ color: 'var(--brand-primary)' }}>IBelieveThis</span>
             </h1>
             <p className="lead" style={{ color: '#4b5563' }}>
-              Charlie Bells is a trusted supplier of home care chemicals, detergents, and cleaning solutions serving businesses and households with dependable quality and consistent performance.
+              IBelieveThis is a trusted supplier of home care chemicals, detergents, and cleaning solutions serving businesses and households with dependable quality and consistent performance.
             </p>
           </div>
           <div className="col-lg-5">
@@ -79,7 +79,7 @@ const About = () => {
               Our Story
             </h3>
             <p style={{ color: '#4b5563', lineHeight: 1.7 }}>
-              Charlie Bells was built to serve customers who need dependable chemical products, trusted sourcing, and consistent supply for commercial and household use.
+              IBelieveThis was built to serve customers who need dependable chemical products, trusted sourcing, and consistent supply for commercial and household use.
             </p>
             <p style={{ color: '#4b5563', lineHeight: 1.7 }}>
               Today, we are recognized for quality formulations, reliable fulfillment, and a customer-first approach focused on safe, effective solutions for cleaning and home care operations.
@@ -125,7 +125,7 @@ const About = () => {
             <div className="col-md-6">
               <h3 className="fw-bold mb-3">Our Promise</h3>
               <p style={{ lineHeight: 1.7 }}>
-                Every order from Charlie Bells is backed by responsible sourcing, reliable delivery, and attentive support.
+                Every order from IBelieveThis is backed by responsible sourcing, reliable delivery, and attentive support.
               </p>
             </div>
           </div>

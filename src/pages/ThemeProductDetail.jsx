@@ -520,7 +520,7 @@ const ThemeProductDetail = () => {
           name: `How much does ${product.name} cost?`,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: `${product.name} is priced at $${Number(product.discount_price || product.price).toFixed(2)} USD on charlie-bells.com.`,
+            text: `${product.name} is priced at $${Number(product.discount_price || product.price).toFixed(2)} USD at ${SITE_NAME}.`,
           },
         },
         {

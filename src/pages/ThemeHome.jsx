@@ -31,7 +31,7 @@ const ThemeHome = () => {
     useEffect(() => {
         setPageSeo({
             title: `${SITE_NAME} | ${SITE_TAGLINE}`,
-            description: 'Shop American-made decorative bells, home accents, and Charlie Bells collections. Secure checkout with fast US shipping.',
+            description: 'Shop American-made decorative bells, home accents, and IBelieveThis collections. Secure checkout with fast US shipping.',
             path: '/',
         });
 
@@ -40,8 +40,12 @@ const ThemeHome = () => {
             '@type': 'Organization',
             name: SITE_NAME,
             url: SITE_URL,
-            logo: `${SITE_URL}/src/assets/images/faviconbells.png`,
+            logo: `${SITE_URL}/IBelieveThis.png`,
             description: SITE_TAGLINE,
+            areaServed: {
+                '@type': 'Country',
+                name: 'United States',
+            },
         });
 
         injectJsonLd('seo-website-jsonld', {
@@ -49,6 +53,7 @@ const ThemeHome = () => {
             '@type': 'WebSite',
             name: SITE_NAME,
             url: SITE_URL,
+            inLanguage: 'en-US',
             potentialAction: {
                 '@type': 'SearchAction',
                 target: `${SITE_URL}/all-products?search={search_term_string}`,
@@ -200,7 +205,7 @@ const ThemeHome = () => {
     if (loading || heroSlides.length === 0) return (
         <div className="loader-container">
             <div className="theme-loader"></div>
-            <p>Loading Charlie Bells...</p>
+            <p>Loading IBelieveThis...</p>
         </div>
     );
 
@@ -239,8 +244,12 @@ const ThemeHome = () => {
                                     transition={{ duration: 0.5 }}
                                 >
                                     <span className="hero-tag">Premium Quality • Professional Grade</span>
-                                    <h1 className="hero-title">{heroSlides[currentSlide].title}</h1>
-                                    <p className="hero-desc">{heroSlides[currentSlide].description}</p>
+                                    <h1 className="hero-title">
+                                      {(heroSlides[currentSlide].title || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
+                                    </h1>
+                                    <p className="hero-desc">
+                                      {(heroSlides[currentSlide].description || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
+                                    </p>
                                     <div className="hero-btns">
                                         <Link to="/all-products" className="btn-main">Shop Now <FaArrowRight /></Link>
                                         <Link to="/all-products" className="btn-sec">View Catalog</Link>

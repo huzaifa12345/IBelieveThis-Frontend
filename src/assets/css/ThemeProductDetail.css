@@ -69,7 +69,7 @@
 
 .thumb-img.active {
   border-color: var(--ts-cyan);
-  box-shadow: 0 4px 15px rgba(243, 191, 75, 0.25);
+  box-shadow: 0 4px 15px rgba(43, 108, 176, 0.25);
 }
 
 /* --- Product Content Styling --- */
@@ -122,13 +122,13 @@
   background: rgba(255, 255, 255, 0.03);
   padding: 20px;
   border-radius: 18px;
-  border-left: 5px solid var(--ts-cyan);
+  border-left: 5px solid var(--brand-primary, #3B8FD4);
   box-shadow: none;
 }
 
 .spec-card .text-navy,
 .spec-card #product-specs-heading {
-  color: #f5f0e6 !important;
+  color: #F5F5F5 !important;
 }
 
 .spec-card .w-35 {
@@ -138,15 +138,15 @@
 
 .spec-card .spec-table {
   margin-bottom: 1rem;
-  color: #f5f0e6;
+  color: #F5F5F5;
   --bs-table-bg: transparent;
-  --bs-table-color: #f5f0e6;
-  --bs-table-border-color: rgba(236, 198, 109, 0.35);
-  border-color: rgba(236, 198, 109, 0.35);
+  --bs-table-color: #F5F5F5;
+  --bs-table-border-color: rgba(59, 143, 212, 0.4);
+  border-color: rgba(59, 143, 212, 0.4);
 }
 
 .spec-card .spec-table > :not(caption) > * > * {
-  border-color: rgba(236, 198, 109, 0.35);
+  border-color: rgba(59, 143, 212, 0.4);
   background-color: transparent;
 }
 
@@ -154,19 +154,19 @@
 .spec-card .spec-table .spec-value {
   vertical-align: middle;
   padding: 0.65rem 0.85rem;
-  color: #f5f0e6 !important;
+  color: #F5F5F5 !important;
   background-color: transparent !important;
 }
 
 .spec-card .spec-table .spec-label {
-  background-color: rgba(236, 198, 109, 0.12) !important;
-  color: #f5f0e6 !important;
+  background-color: rgba(59, 143, 212, 0.14) !important;
+  color: #F5F5F5 !important;
   font-weight: 700;
 }
 
 .spec-card .spec-gtin {
   background: transparent !important;
-  color: var(--brand-primary, #ecc66d) !important;
+  color: var(--brand-primary, #3B8FD4) !important;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.95em;
   padding: 0;
@@ -213,7 +213,7 @@
 }
 
 .qty-input button:hover {
-  background: rgba(243, 191, 75, 0.12);
+  background: rgba(43, 108, 176, 0.12);
 }
 
 .qty-input input {
@@ -236,7 +236,7 @@
   letter-spacing: 1px;
   padding: 8px !important;
   width: 100%;
-  box-shadow: 0 10px 24px rgba(243, 191, 75, 0.25);
+  box-shadow: 0 10px 24px rgba(43, 108, 176, 0.25);
 }
 
 .btn-add-cart:hover {
@@ -260,7 +260,7 @@
 .btn-buy-now:hover {
   background: var(--brand-gradient) !important;
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(243, 191, 75, 0.3) !important;
+  box-shadow: 0 8px 20px rgba(43, 108, 176, 0.3) !important;
   color: var(--ts-white) !important;
 }
 
@@ -308,7 +308,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(243, 191, 75, 0.3);
+  box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
   border: 2px solid white;
 }
 
@@ -416,7 +416,7 @@
 
 .form-control:focus {
   border-color: var(--ts-cyan);
-  box-shadow: 0 0 0 3px rgba(243, 191, 75, 0.15);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.15);
 }
 
 .btn-submit-review {
@@ -481,7 +481,7 @@
 .verified-badge-text {
   font-size: 10px;
   color: var(--ts-cyan);
-  background: rgba(243, 191, 75, 0.16);
+  background: rgba(43, 108, 176, 0.16);
   padding: 3px 10px;
   border-radius: 50px;
   margin-left: 10px;

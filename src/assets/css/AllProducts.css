@@ -6,7 +6,7 @@
   --ap-white: var(--brand-white);
   --ap-bg: var(--brand-bg);
   --ap-gray: var(--brand-muted);
-  --shadow-md: 0 14px 35px -12px rgba(238, 202, 82, 0.16);
+  --shadow-md: 0 14px 35px -12px rgba(43, 108, 176, 0.16);
   --grad-electric: var(--brand-gradient);
 }
 
@@ -92,7 +92,7 @@
 .item-card:hover {
   transform: translateY(-12px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(243, 191, 75, 0.25);
+  border-color: rgba(43, 108, 176, 0.25);
 }
 
 .item-thumb {
@@ -234,7 +234,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(243, 191, 75, 0.3);
+  box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
   border: 2px solid white;
 }
 

@@ -1,6 +1,7 @@
-export const SITE_URL = 'https://charlie-bells.com';
-export const SITE_NAME = 'Charlie Bells';
+export const SITE_URL = 'https://ibelievethis.us';
+export const SITE_NAME = 'IBelieveThis';
 export const SITE_TAGLINE = 'American Made Decorative Bells & Home Accents';
+export const SITE_OG_IMAGE = `${SITE_URL}/IBelieveThis.png`;
 
 /**
  * SEO-friendly slug from a product/category name.
@@ -60,7 +61,7 @@ export function setPageSeo({
   const url = absoluteUrl(path);
   const imageUrl = image
     ? (image.startsWith('http') ? image : absoluteUrl(image))
-    : absoluteUrl('/src/assets/images/faviconbells.png');
+    : SITE_OG_IMAGE;
 
   document.title = fullTitle;
 

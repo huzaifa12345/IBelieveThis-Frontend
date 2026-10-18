@@ -9,4 +9,4 @@ Disallow: /register
 Disallow: /change-password
 Disallow: /cart
 
-Sitemap: https://charlie-bells.com/sitemap.xml
+Sitemap: https://ibelievethis.us/sitemap.xml

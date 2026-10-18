@@ -160,7 +160,7 @@ const OrdersReport = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `charlie-bells-orders-${filters.from || 'all'}-to-${filters.to || 'all'}.csv`;
+    link.download = `ibelievethis-orders-${filters.from || 'all'}-to-${filters.to || 'all'}.csv`;
     link.click();
     URL.revokeObjectURL(url);
     toast.success('CSV downloaded');
@@ -173,7 +173,7 @@ const OrdersReport = () => {
           <h4 className="or-title d-flex align-items-center gap-2">
             <BarChart3 size={22} style={{ color: '#f26522' }} /> Orders Report
           </h4>
-          <p className="or-subtitle">Custom date-range performance for Charlie Bells · {rangeLabel}</p>
+          <p className="or-subtitle">Custom date-range performance for IBelieveThis · {rangeLabel}</p>
         </div>
         <div className="d-flex gap-2">
           <button className="btn btn-sm btn-outline-dark d-flex align-items-center gap-2" onClick={() => loadReport()} disabled={loading}>

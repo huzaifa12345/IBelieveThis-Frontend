@@ -46,9 +46,9 @@
 body, html, #root {
   background-color: #0e0d0a !important;
   background-image: 
-    radial-gradient(circle at 50% 30%, rgba(255, 179, 0, 0.07) 0%, transparent 65%),
-    linear-gradient(rgba(255, 179, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 179, 0, 0.05) 1px, transparent 1px) !important;
+    radial-gradient(circle at 50% 30%, rgba(43, 108, 176, 0.07) 0%, transparent 65%),
+    linear-gradient(rgba(43, 108, 176, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 108, 176, 0.05) 1px, transparent 1px) !important;
   background-size: 100% 100%, 35px 35px, 35px 35px !important;
   background-attachment: fixed !important;
   color: #F5F5F5;

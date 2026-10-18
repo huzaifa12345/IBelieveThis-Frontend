@@ -1,6 +1,6 @@
 :root {
     --side-bg: var(--brand-white);
-    --side-item-hover: rgba(243, 191, 75, 0.12);
+    --side-item-hover: rgba(43, 108, 176, 0.12);
     --side-accent: var(--brand-primary);
     --side-text: var(--brand-charcoal);
     --side-muted: var(--brand-muted);
@@ -35,7 +35,7 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--side-border);
-    background: rgba(243, 191, 75, 0.08);
+    background: rgba(43, 108, 176, 0.08);
 }
 
 .menu-title {
@@ -48,7 +48,7 @@
 
 .close-btn {
     background: rgba(232, 108, 36, 0.08);
-    border: 1px solid rgba(243, 191, 75, 0.25);
+    border: 1px solid rgba(43, 108, 176, 0.25);
     color: var(--side-text);
     padding: 8px;
     border-radius: 10px;
@@ -108,7 +108,7 @@
     background: var(--side-item-hover);
     color: var(--side-text);
     transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(243, 191, 75, 0.14);
+    box-shadow: 0 4px 12px rgba(43, 108, 176, 0.14);
 }
 
 .cat-list {
@@ -131,7 +131,7 @@
     background: var(--side-item-hover);
     border-color: var(--side-accent);
     transform: translateX(3px);
-    box-shadow: 0 4px 12px rgba(243, 191, 75, 0.12);
+    box-shadow: 0 4px 12px rgba(43, 108, 176, 0.12);
 }
 
 .cat-name {

@@ -43,7 +43,7 @@
 
 .fb-search-box:focus-within {
   border-color: var(--fb-cyan);
-  box-shadow: 0 0 0 3px rgba(243, 191, 75, 0.16);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.16);
 }
 
 .fb-search-icon {
@@ -202,7 +202,7 @@
 }
 
 .fb-sort-option.active {
-  background: rgba(243, 191, 75, 0.12);
+  background: rgba(43, 108, 176, 0.12);
   color: var(--fb-cyan);
   font-weight: 600;
 }
@@ -231,7 +231,7 @@
 
 .fb-filter-btn.has-filters {
   border-color: var(--fb-cyan);
-  background: rgba(243, 191, 75, 0.1);
+  background: rgba(43, 108, 176, 0.1);
 }
 
 .fb-filter-badge {
@@ -396,7 +396,7 @@
 
 .fb-price-field:focus-within {
   border-color: var(--fb-cyan);
-  box-shadow: 0 0 0 3px rgba(243, 191, 75, 0.12);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.12);
 }
 
 .fb-price-prefix {
@@ -441,7 +441,7 @@
 
 .fb-preset-btn:hover {
   border-color: var(--fb-cyan);
-  background: rgba(243, 191, 75, 0.08);
+  background: rgba(43, 108, 176, 0.08);
   color: var(--fb-cyan);
 }
 

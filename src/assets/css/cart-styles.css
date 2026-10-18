@@ -1,16 +1,16 @@
 /* Professional Cart Styles */
 :root {
-  --brand-primary: #F3BF4B;
-  --brand-primary-hover: #DE9E32;
+  --brand-primary: #2B6CB0;
+  --brand-primary-hover: #1A4A82;
   --brand-charcoal: #231815;
   --brand-charcoal-deep: #150C0A;
   --brand-surface: #FFFFFF;
   --brand-bg: #FAF8F5;
   --brand-muted: #A89F91;
   --brand-border: #E8DFD1;
-  --brand-gradient: linear-gradient(135deg, #FCE380 0%, #F3BF4B 50%, #DE9E32 100%);
-  --brand-shadow: 0 8px 20px rgba(238, 202, 82, 0.4);
-  --brand-drop-shadow: drop-shadow(0 0 12px rgba(243, 191, 75, 0.75));
+  --brand-gradient: linear-gradient(135deg, #5B9BD5 0%, #2B6CB0 50%, #1A4A82 100%);
+  --brand-shadow: 0 8px 20px rgba(43, 108, 176, 0.4);
+  --brand-drop-shadow: drop-shadow(0 0 12px rgba(43, 108, 176, 0.75));
 }
 
 /* Cart Header */
@@ -191,13 +191,13 @@
   font-size: 16px;
   display: flex;
   align-items: center;
-  box-shadow: 0 4px 15px rgba(243, 191, 75, 0.28);
+  box-shadow: 0 4px 15px rgba(43, 108, 176, 0.28);
   transition: all 0.3s ease;
 }
 
 .btn-primary-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(243, 191, 75, 0.35);
+  box-shadow: 0 6px 20px rgba(43, 108, 176, 0.35);
   color: white;
 }
 

@@ -1,9 +1,8 @@
 /**
  * Vercel serverless proxy → live backend sitemap.
- * Keeps https://charlie-bells.com/sitemap.xml always in sync with the catalog.
+ * Keeps https://ibelievethis.us/sitemap.xml always in sync with the catalog.
  *
  * Set Vercel env: API_ORIGIN=https://your-backend-host (no trailing slash)
- * Example: https://charlie-bells-api.onrender.com
  */
 export default async function handler(req, res) {
   const apiOrigin = (process.env.API_ORIGIN || process.env.VITE_API_URL || '')

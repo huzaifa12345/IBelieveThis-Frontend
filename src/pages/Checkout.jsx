@@ -32,7 +32,7 @@ const US_STATES = [
 const stripeAppearance = {
   theme: 'night',
   variables: {
-    colorPrimary: '#ecc66d',
+    colorPrimary: '#2B6CB0',
     colorBackground: '#231815',
     colorText: '#f8fafc',
     colorDanger: '#ef4444',

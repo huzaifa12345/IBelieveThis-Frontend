@@ -177,7 +177,7 @@ const Admin = () => {
         background: 'linear-gradient(180deg, #fff7ed 0%, #f8fafc 55%, #eef2f7 100%)'
       }}>
         
-        {/* --- REFINED CHARLIE BELLS ADMIN TOPBAR --- */}
+        {/* --- REFINED IBELIEVETHIS ADMIN TOPBAR --- */}
         <header className="sticky-top w-100 shadow-lg" style={{ 
           background: 'linear-gradient(135deg, #111827 0%, #0f172a 100%)', 
           borderBottom: '3px solid #f26522',
@@ -196,7 +196,7 @@ const Admin = () => {
                     <Trophy size={22} className="text-white" />
                   </div>
                   <div className="d-flex flex-column">
-                    <span className="text-white fw-bold m-0" style={{ fontSize: '1.2rem', letterSpacing: '1px', lineHeight: '1.1' }}>CHARLIE BELLS</span>
+                    <span className="text-white fw-bold m-0" style={{ fontSize: '1.2rem', letterSpacing: '1px', lineHeight: '1.1' }}>IBelieveThis</span>
                     <span className="fw-bold" style={{ fontSize: '0.65rem', letterSpacing: '2px', color: '#fb923c' }}>CONTROL PANEL</span>
                   </div>
                 </div>

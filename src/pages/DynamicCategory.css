@@ -130,7 +130,7 @@
 .item-card:hover {
   transform: translateY(-12px);
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
-  border-color: rgba(243, 191, 75, 0.24);
+  border-color: rgba(43, 108, 176, 0.24);
 }
 
 .item-thumb {

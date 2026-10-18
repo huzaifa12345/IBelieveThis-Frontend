@@ -3,11 +3,11 @@
 :root {
   --ch-charcoal-deep: #150C0A;
   --ch-charcoal: #231815;
-  --ch-primary: #ecc66dfb;
-  --ch-primary-hover: #ecaa4d;
+  --ch-primary: #2B6CB0;
+  --ch-primary-hover: #1E5494;
   --ch-soft-grey: #A89F91;
   --ch-white: #ffffff;
-  --ch-success-gold: #F3BF4B;
+  --ch-success-gold: #2B6CB0;
 }
 
 .ch-checkout-page-wrapper {
@@ -132,7 +132,7 @@
 .ch-form-control-ind:focus {
   outline: none;
   border-color: var(--ch-primary);
-  box-shadow: 0 0 0 3px rgba(243, 191, 75, 0.12);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.12);
 }
 
 .ch-state-select {
@@ -171,7 +171,7 @@
 
 .ch-btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(243, 191, 75, 0.35);
+  box-shadow: 0 5px 15px rgba(43, 108, 176, 0.35);
   color: #fff;
 }
 
@@ -212,7 +212,7 @@
 
 .ch-payment-option.active {
   border-color: var(--ch-primary);
-  background: rgba(243, 191, 75, 0.08);
+  background: rgba(43, 108, 176, 0.08);
 }
 
 .ch-option-check {

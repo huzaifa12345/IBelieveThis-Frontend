@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --brand-primary: #ecc66dfb;
-  --brand-primary-hover: #ecaa4d;
+  /* IBelieveThis logo blue (replaces Charlie Bells gold) */
+  --brand-primary: #2B6CB0;
+  --brand-primary-hover: #1E5494;
+  --brand-gold: #2B6CB0;
   --brand-charcoal: #231815;
   --brand-charcoal-deep: #150C0A;
   --brand-bg: #0e0d0a;
@@ -12,9 +14,9 @@
   --brand-text: #231815;
   --brand-muted: #A89F91;
   --brand-border: #E8DFD1;
-  --brand-gradient: linear-gradient(135deg, #FCE380 0%, #F3BF4B 50%, #DE9E32 100%);
-  --brand-shadow: 0 8px 20px rgba(238, 202, 82, 0.4);
-  --brand-drop-shadow: drop-shadow(0 0 12px rgba(243, 191, 75, 0.75));
+  --brand-gradient: linear-gradient(135deg, #5B9BD5 0%, #2B6CB0 50%, #1A4A82 100%);
+  --brand-shadow: 0 8px 20px rgba(43, 108, 176, 0.4);
+  --brand-drop-shadow: drop-shadow(0 0 12px rgba(43, 108, 176, 0.55));
 }
 
 * {
@@ -101,7 +103,7 @@ select:focus,
 textarea:focus,
 button:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(243, 191, 75, 0.18);
+  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.18);
 }
 
 .btn-primary,
@@ -133,9 +135,9 @@ body,
 .App > main {
   background-color: #0e0d0a !important;
   background-image: 
-    radial-gradient(circle at 50% 30%, rgba(255, 179, 0, 0.07) 0%, transparent 65%),
-    linear-gradient(rgba(255, 179, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 179, 0, 0.05) 1px, transparent 1px) !important;
+    radial-gradient(circle at 50% 30%, rgba(43, 108, 176, 0.08) 0%, transparent 65%),
+    linear-gradient(rgba(43, 108, 176, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(43, 108, 176, 0.06) 1px, transparent 1px) !important;
   background-size: 100% 100%, 35px 35px, 35px 35px !important;
   background-attachment: fixed !important;
   color: #F5F5F5;

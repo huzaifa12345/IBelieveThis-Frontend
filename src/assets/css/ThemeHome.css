@@ -8,8 +8,8 @@
     --ts-text-gray: var(--brand-muted);
     --ts-bg-light: var(--brand-bg);
     --grad-electric: var(--brand-gradient);
-    --shadow-sm: 0 4px 6px -1px rgba(238, 202, 82, 0.18);
-    --shadow-md: 0 14px 35px -12px rgba(238, 202, 82, 0.16);
+    --shadow-sm: 0 4px 6px -1px rgba(43, 108, 176, 0.18);
+    --shadow-md: 0 14px 35px -12px rgba(43, 108, 176, 0.16);
     --glass: rgba(255, 255, 255, 0.9);
 }
 
@@ -42,7 +42,7 @@
 /* --- Hero Section & Slider --- */
 .hero-wrapper {
     padding: 60px 0 100px 0;
-    background: radial-gradient(circle at top right, rgba(243, 191, 75, 0.12), transparent 50%);
+    background: radial-gradient(circle at top right, rgba(43, 108, 176, 0.12), transparent 50%);
     position: relative;
 }
 
@@ -65,7 +65,7 @@
     box-shadow: var(--shadow-sm);
     display: inline-block;
     margin-bottom: 25px;
-    border: 1px solid rgba(243, 191, 75, 0.24);
+    border: 1px solid rgba(43, 108, 176, 0.24);
 }
 
 .hero-title {
@@ -102,13 +102,13 @@
     gap: 12px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: none;
-    box-shadow: 0 10px 24px rgba(243, 191, 75, 0.25);
+    box-shadow: 0 10px 24px rgba(43, 108, 176, 0.25);
 }
 
 .btn-main:hover {
     background: var(--brand-gradient);
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 14px 28px rgba(243, 191, 75, 0.35);
+    box-shadow: 0 14px 28px rgba(43, 108, 176, 0.35);
     color: var(--ts-white);
 }
 
@@ -293,7 +293,7 @@
 .item-card:hover {
     transform: translateY(-12px);
     box-shadow: var(--shadow-md);
-    border-color: rgba(243, 191, 75, 0.25);
+    border-color: rgba(43, 108, 176, 0.25);
 }
 
 .item-thumb {
@@ -446,7 +446,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(243, 191, 75, 0.3);
+  box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
   border: 2px solid white;
 }
 
@@ -526,7 +526,7 @@
 .f-icon {
     font-size: 2.8rem;
     color: var(--ts-cyan);
-    background: rgba(243, 191, 75, 0.12);
+    background: rgba(43, 108, 176, 0.12);
     padding: 15px;
     border-radius: 18px;
 }

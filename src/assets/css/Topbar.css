@@ -1,16 +1,16 @@
-/* --- Charlie Bells BRAVO BELLS THEME TOKENS ---
+/* --- IBelieveThis THEME TOKENS --- */
 :root {
 
-  --brand-primary: #FFB300;       
-  --brand-primary-hover: #FFA000;  
-  --brand-charcoal-deep: #0D0D0D;  
-  --brand-charcoal: #181818;      
-  --brand-charcoal-light: #242424; 
+  --brand-primary: #3B8FD4;
+  --brand-primary-hover: #2B6CB0;
+  --brand-charcoal-deep: #0D0D0D;
+  --brand-charcoal: #181818;
+  --brand-charcoal-light: #242424;
   --brand-white: #FFFFFF;
-  --brand-muted: #9E9E9E;        
-  --brand-border: #333333;       
-  --brand-border-gold: rgba(255, 179, 0, 0.4);
-  --brand-gold-glow: 0 0 12px rgba(255, 179, 0, 0.25);
+  --brand-muted: #9E9E9E;
+  --brand-border: #333333;
+  --brand-border-gold: rgba(43, 108, 176, 0.45);
+  --brand-gold-glow: 0 0 12px rgba(43, 108, 176, 0.35);
   --brand-drop-shadow: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 }
 
@@ -19,14 +19,15 @@
   background: var(--brand-charcoal-deep);
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
+  isolation: isolate;
   border-bottom: 1px solid var(--brand-border);
 }
 
 
 .ts-trust-bar {
   background: var(--brand-primary);
-  color: #000000;
+  color: #FFFFFF;
   padding: 6px 0;
   text-align: center;
   font-size: 11px;
@@ -36,7 +37,7 @@
 }
 
 .ts-trust-bar .ts-accent-text {
-  color: #000000;
+  color: #FFFFFF;
 }
 
 
@@ -159,7 +160,7 @@
 .ts-cart-btn:hover,
 .ts-menu-toggle:hover {
   background: var(--brand-primary);
-  color: #000000;
+  color: #FFFFFF;
   box-shadow: var(--brand-gold-glow);
 }
 
@@ -180,7 +181,7 @@
   padding: 0 4px;
   border-radius: 50%;
   background: var(--brand-primary);
-  color: #000000;
+  color: #FFFFFF;
   font-size: 10px;
   font-weight: 900;
   line-height: 18px;
@@ -220,7 +221,8 @@
 
 
 :root {
-  --brand-gold: #ecc66dfb;
+  /* Brighter logo blue so the under-logo bar reads clearly on black */
+  --brand-gold: #3B8FD4;
   --brand-black: #050505;
   --brand-charcoal: #111111;
   --brand-dropdown-bg: #1A1A1A;
@@ -233,7 +235,8 @@
   background: var(--brand-black);
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
+  isolation: isolate;
 }
 
 /* Brand Banner Container */
@@ -241,12 +244,12 @@
   /* Local image path from src/assets/images/ */
   background: 
     linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.55)),
-    url('../images/banner4.jpg');
+    url('../images/banner5.avif');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   padding: 24px 0;
-  border-bottom: 1px solid var(--brand-border-dark);
+  border-bottom: none;
 }
 
 .ts-logo {
@@ -258,7 +261,7 @@
 /* Main Navigation Bar (Single Row) */
 .ts-main-navbar {
   background: #111111;
-  border-bottom: 1px solid var(--brand-gold);
+  border-bottom: 2px solid var(--brand-gold);
   padding: 0 10px;
 }
 
@@ -274,7 +277,7 @@
 }
 
 .ts-nav-link {
-  color: var(--brand-text-light);
+  color: #F0F0F0;
   text-decoration: none;
   font-weight: 700;
   font-size: 12px;
@@ -298,20 +301,32 @@
   color: var(--brand-gold);
 }
 
-/* Dropdown Menus */
+/* Dropdown Menus — solid opaque panel (must beat page bg / transparent !important rules) */
 .ts-dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: var(--brand-dropdown-bg);
+  background: #141414 !important;
+  background-color: #141414 !important;
+  background-image: none !important;
+  opacity: 1 !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   min-width: 220px;
   list-style: none;
   padding: 8px 0;
   margin: 0;
+  border: 1px solid #2a2a2a;
   border-top: 2px solid var(--brand-gold);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
   display: none;
-  z-index: 1050;
+  z-index: 3000;
+}
+
+.ts-dropdown {
+  position: relative;
+  z-index: 3001;
 }
 
 .ts-dropdown:hover .ts-dropdown-menu {
@@ -321,15 +336,16 @@
 .ts-dropdown-item {
   display: block;
   padding: 10px 18px;
-  color: #DDDDDD;
+  color: #F0F0F0;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
+  background-color: transparent;
 }
 
 .ts-dropdown-item:hover {
-  background-color: #262626;
+  background-color: #262626 !important;
   color: var(--brand-gold);
   padding-left: 22px;
 }
@@ -338,7 +354,7 @@
 .ts-action-icon-btn {
   background: transparent;
   border: none;
-  color: var(--brand-text-light);
+  color: #F0F0F0;
   font-size: 1.1rem;
   padding: 10px;
   cursor: pointer;
@@ -357,7 +373,7 @@
   top: 2px;
   right: 0px;
   background: var(--brand-gold);
-  color: #000000;
+  color: #FFFFFF;
   font-size: 10px;
   font-weight: 900;
   border-radius: 50%;

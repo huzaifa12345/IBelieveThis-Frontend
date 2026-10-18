@@ -29,7 +29,7 @@ const DynamicCategory = () => {
     if (!category) return;
     setPageSeo({
       title: category.name,
-      description: category.description || `Shop ${category.name} at Charlie Bells — American-made decorative bells and home accents.`,
+      description: category.description || `Shop ${category.name} at IBelieveThis — American-made decorative bells and home accents.`,
       path: `/category/${categorySlug}`,
     });
   }, [category, categorySlug]);

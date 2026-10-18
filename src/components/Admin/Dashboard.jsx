@@ -4,7 +4,7 @@ import { Package, ShoppingCart, DollarSign, Tags } from 'lucide-react';
 const Dashboard = ({ stats, products, categories }) => {
   return (
     <div className="row">
-      {/* Stats Cards - Charlie Bells Theme */}
+      {/* Stats Cards - IBelieveThis Theme */}
       <div className="col-xl-4 col-lg-6 col-md-6 col-sm-6 mb-4">
         <div className="card border-0 shadow-sm" style={{ background: 'linear-gradient(135deg, #f26522 0%, #fb923c 100%)', color: 'white', borderRadius: '18px' }}>
           <div className="card-body">

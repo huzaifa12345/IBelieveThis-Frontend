@@ -30,7 +30,7 @@ const Footer = () => {
       <div className="ts-bottom-wood-bar">
         <div className="ts-wood-bar-content">
           <p className="ts-copy-text">
-            &copy; 2026 <b>Charlie Bells</b> - Designed by <Link to="https://codebasesln.com" target="_blank" rel="noopener noreferrer"><span className="ts-dev-text">CodeBase Solutions</span></Link>
+            &copy; 2026 <b>IBelieveThis</b> - Designed by <Link to="https://codebasesln.com" target="_blank" rel="noopener noreferrer"><span className="ts-dev-text">CodeBase Solutions</span></Link>
           </p>
           <button className="ts-wood-scroll-btn" onClick={handleScrollTop} aria-label="Scroll to top">
             <FaArrowUp />
