@@ -23,7 +23,31 @@ const WebsiteSettings = () => {
       // Must have at least one category with a non-empty array of settings
       const validData = rawData && Object.values(rawData).some(arr => Array.isArray(arr) && arr.length > 0) ? rawData : null;
 
-      if (validData) {
+      // Shipping alone is "valid" but logo/hero may still be missing on fresh DBs
+      const hasLogo = Array.isArray(rawData?.logo) && rawData.logo.length > 0;
+      const hasHero = Array.isArray(rawData?.hero) && rawData.hero.length > 0;
+
+      if (validData && hasLogo && hasHero) {
+        setSettings(validData);
+        const previews = {};
+        Object.values(validData).flat().forEach(setting => {
+          if (setting?.type === 'image' && setting?.value) {
+            previews[setting.id] = setting.value;
+          }
+        });
+        setPreviewImages(previews);
+      } else if (!silent && (!hasLogo || !hasHero)) {
+        // Backfill logo + slider rows without wiping existing shipping settings
+        const initResponse = await websiteSettingsApi.initializeSettings();
+        if (initResponse?.success) {
+          await fetchSettings(true);
+        } else if (validData) {
+          setSettings(validData);
+        } else {
+          setSettings({});
+          setPreviewImages({});
+        }
+      } else if (validData) {
         setSettings(validData);
         const previews = {};
         Object.values(validData).flat().forEach(setting => {
