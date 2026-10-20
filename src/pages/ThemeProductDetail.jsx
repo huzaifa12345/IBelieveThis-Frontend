@@ -555,19 +555,32 @@ const ThemeProductDetail = () => {
     };
   }, [product]);
 
+  const productSizes = Array.isArray(product?.sizes) ? product.sizes : [];
+  const requiresSize = productSizes.length > 0;
+
   const handleAddToCart = () => {
+    if (requiresSize && !selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
     addToCart({ 
       ...product, 
-      selectedSize, 
+      selectedSize,
+      selected_size: selectedSize || null,
       price: product.discount_price || product.price 
     }, quantity);
-    toast.success(`${product.name} added to cart!`);
+    toast.success(`${product.name}${selectedSize ? ` (${selectedSize})` : ''} added to cart!`);
   };
 
   const handleBuyNow = () => {
+    if (requiresSize && !selectedSize) {
+      toast.error('Please select a size');
+      return;
+    }
     addToCart({ 
       ...product, 
-      selectedSize, 
+      selectedSize,
+      selected_size: selectedSize || null,
       price: product.discount_price || product.price 
     }, quantity);
     navigate('/checkout');
@@ -675,17 +688,26 @@ const ThemeProductDetail = () => {
               </div>
 
               <div className="price-display mb-3">
-                {product.discount_price && product.discount_price < product.price ? (
-                  <>
-                    <span className="original-price-tag">${product.price}</span>
-                    <span className="price-tag">${product.discount_price}</span>
-                    <span className="discount-badge">
-                      -{Math.round(((product.price - product.discount_price) / product.price) * 100)}%
+                {(() => {
+                  const regular = Number(product.price);
+                  const sale = Number(product.discount_price);
+                  const hasSale = Number.isFinite(sale) && Number.isFinite(regular) && sale > 0 && sale < regular;
+                  if (hasSale) {
+                    const pct = Math.round(((regular - sale) / regular) * 100);
+                    return (
+                      <>
+                        <span className="original-price-tag">${regular.toFixed(2)}</span>
+                        <span className="price-tag">${sale.toFixed(2)}</span>
+                        <span className="discount-badge">-{pct}%</span>
+                      </>
+                    );
+                  }
+                  return (
+                    <span className="price-tag">
+                      ${Number.isFinite(regular) ? regular.toFixed(2) : product.price}
                     </span>
-                  </>
-                ) : (
-                  <span className="price-tag">${product.price}</span>
-                )}
+                  );
+                })()}
               </div>
 
               <p
@@ -735,6 +757,49 @@ const ThemeProductDetail = () => {
                   <p className="description-text">{product.description}</p>
                 ) : null}
               </section>
+
+              {requiresSize && (
+                <div className="size-selector-wrap mb-4">
+                  <label className="form-label fw-bold text-white mb-2 d-block">
+                    Size <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    className="form-select size-select-etsy"
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                  >
+                    <option value="">Select an option</option>
+                    {productSizes.map((s, i) => {
+                      const label = typeof s === 'string' ? s : s.size;
+                      const qty = typeof s === 'object' ? Number(s.quantity) : null;
+                      const out = Number.isFinite(qty) && qty <= 0;
+                      return (
+                        <option key={`${label}-${i}`} value={label} disabled={out}>
+                          {label}{out ? ' — Sold out' : ''}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="size-chip-row mt-2">
+                    {productSizes.map((s, i) => {
+                      const label = typeof s === 'string' ? s : s.size;
+                      const qty = typeof s === 'object' ? Number(s.quantity) : null;
+                      const out = Number.isFinite(qty) && qty <= 0;
+                      return (
+                        <button
+                          key={`chip-${label}-${i}`}
+                          type="button"
+                          className={`btn size-btn ${selectedSize === label ? 'active' : ''}`}
+                          disabled={out}
+                          onClick={() => setSelectedSize(label)}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="action-row mb-5">
                 <div className="qty-input">

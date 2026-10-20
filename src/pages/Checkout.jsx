@@ -123,7 +123,7 @@ const Checkout = () => {
       product_id: item.id,
       quantity: item.quantity,
       unit_price: parseFloat(item.price),
-      selected_size: item.selected_size || null
+      selected_size: item.selected_size || item.selectedSize || null
     })),
     payment_method: 'stripe',
     ...overrides
@@ -169,7 +169,7 @@ const Checkout = () => {
           items: items.map((item) => ({
             product_id: item.id,
             quantity: item.quantity,
-            selected_size: item.selected_size || null
+            selected_size: item.selected_size || item.selectedSize || null
           }))
         });
         if (!cancelled) {

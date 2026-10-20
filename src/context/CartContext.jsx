@@ -11,16 +11,19 @@ const DEFAULT_SHIPPING = {
   tax_rate: 0.083,
 };
 
+const cartLineKey = (item) => `${item.id}::${item.selected_size || item.selectedSize || ''}`;
+
 const cartReducer = (state, action) => {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existingItem = state.items.find(item => item.id === action.payload.id);
+      const incomingKey = cartLineKey(action.payload);
+      const existingItem = state.items.find((item) => cartLineKey(item) === incomingKey);
 
       if (existingItem) {
         return {
           ...state,
-          items: state.items.map(item =>
-            item.id === action.payload.id
+          items: state.items.map((item) =>
+            cartLineKey(item) === incomingKey
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
           )
@@ -29,21 +32,21 @@ const cartReducer = (state, action) => {
 
       return {
         ...state,
-        items: [...state.items, action.payload]
+        items: [...state.items, { ...action.payload, cartKey: incomingKey }]
       };
     }
 
     case 'REMOVE_FROM_CART':
       return {
         ...state,
-        items: state.items.filter(item => item.id !== action.payload)
+        items: state.items.filter((item) => cartLineKey(item) !== action.payload)
       };
 
     case 'UPDATE_QUANTITY':
       return {
         ...state,
-        items: state.items.map(item =>
-          item.id === action.payload.id
+        items: state.items.map((item) =>
+          cartLineKey(item) === action.payload.key
             ? { ...item, quantity: action.payload.quantity }
             : item
         )
@@ -161,18 +164,35 @@ export const CartProvider = ({ children }) => {
   ];
 
   const addToCart = (product, quantity = 1) => {
-    dispatch({ type: 'ADD_TO_CART', payload: { ...product, quantity } });
+    const selected_size = product.selected_size || product.selectedSize || null;
+    dispatch({
+      type: 'ADD_TO_CART',
+      payload: {
+        ...product,
+        quantity,
+        selected_size,
+        selectedSize: selected_size,
+      },
+    });
   };
 
-  const removeFromCart = (productId) => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: productId });
+  const removeFromCart = (productOrKey) => {
+    const key =
+      typeof productOrKey === 'string'
+        ? productOrKey
+        : cartLineKey(productOrKey);
+    dispatch({ type: 'REMOVE_FROM_CART', payload: key });
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const updateQuantity = (productOrKey, quantity) => {
+    const key =
+      typeof productOrKey === 'string'
+        ? productOrKey
+        : cartLineKey(productOrKey);
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(key);
     } else {
-      dispatch({ type: 'UPDATE_QUANTITY', payload: { id: productId, quantity } });
+      dispatch({ type: 'UPDATE_QUANTITY', payload: { key, quantity } });
     }
   };
 

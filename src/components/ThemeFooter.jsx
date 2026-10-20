@@ -14,7 +14,7 @@ const Footer = () => {
       <div className="ts-footer-middle">
         <div className="ts-social-bar">
           <a href="#" className="ts-soc-btn pinterest" aria-label="Pinterest"><FaPinterestP /></a>
-          <a href="#" className="ts-soc-btn etsy" aria-label="Etsy"><FaEtsy /></a>
+          <a href="https://www.etsy.com/shop/IBelieveThis" target="_blank" rel="noopener noreferrer" className="ts-soc-btn etsy" aria-label="Etsy"><FaEtsy /></a>
           <a href="#" className="ts-soc-btn instagram" aria-label="Instagram"><FaInstagram /></a>
           <a href="#" className="ts-soc-btn facebook" aria-label="Facebook"><FaFacebookF /></a>
           {/* <a href="https://wa.me/923227594213" target="_blank" rel="noopener noreferrer" className="ts-soc-btn whatsapp" aria-label="WhatsApp"><FaWhatsapp /></a> */}

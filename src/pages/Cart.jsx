@@ -69,25 +69,31 @@ const Cart = () => {
           {/* Cart Items List */}
           <div className="col-lg-8">
             <div className="cart-items-card">
-              {items.map((item) => (
-                <div className="cart-item-row" key={item.id}>
+              {items.map((item) => {
+                const lineKey = item.cartKey || `${item.id}::${item.selected_size || item.selectedSize || ''}`;
+                const sizeLabel = item.selected_size || item.selectedSize;
+                return (
+                <div className="cart-item-row" key={lineKey}>
                   <div className="item-img-box">
                     <img src={item.images?.[0] || item.image_url || '/placeholder.png'} alt={item.name} />
                   </div>
                   
                   <div className="item-details">
                     <h5 className="item-name">{item.name}</h5>
-                    <p className="item-sku">SKU: IND-{item.id.toString().slice(0,5)}</p>
-                    <button className="remove-link" onClick={() => removeFromCart(item.id)}>
+                    <p className="item-sku">
+                      SKU: IND-{String(item.id).slice(0, 5)}
+                      {sizeLabel ? ` · Size: ${sizeLabel}` : ''}
+                    </p>
+                    <button className="remove-link" onClick={() => removeFromCart(lineKey)}>
                       <Trash2 size={14} /> Remove
                     </button>
                   </div>
 
                   <div className="item-qty-control">
                     <div className="qty-stepper">
-                      <button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}><Minus size={16}/></button>
+                      <button onClick={() => updateQuantity(lineKey, item.quantity - 1)} disabled={item.quantity <= 1}><Minus size={16}/></button>
                       <input type="text" value={item.quantity} readOnly />
-                      <button onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus size={16}/></button>
+                      <button onClick={() => updateQuantity(lineKey, item.quantity + 1)}><Plus size={16}/></button>
                     </div>
                   </div>
 
@@ -96,7 +102,8 @@ const Cart = () => {
                     <h5 className="total-price">${(item.price * item.quantity).toFixed(2)}</h5>
                   </div>
                 </div>
-              ))}
+              );
+              })}
 
               <div className="cart-footer-actions">
                 <Link to="/all-products" className="btn-continue">

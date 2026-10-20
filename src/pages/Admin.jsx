@@ -14,13 +14,14 @@ import PaymentAudits from '../components/Admin/PaymentAudits';
 import ShippingSettings from '../components/Admin/ShippingSettings';
 import OrdersReport from '../components/Admin/OrdersReport';
 import FailedEmails from '../components/Admin/FailedEmails';
+import SizeManagement from '../components/Admin/SizeManagement';
 import { isSuperAdmin } from '../utils/roles';
 
 import { 
   LayoutDashboard, Package, Tags, Truck, 
   Settings, Menu, LogOut, Store, 
   Activity, Search, Trophy, ClipboardList, ShieldCheck,
-  BarChart3, Mail
+  BarChart3, Mail, Ruler
 } from 'lucide-react';
 
 const Admin = () => {
@@ -29,11 +30,14 @@ const Admin = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [products, setProducts] = useState([]);
+  const [productPagination, setProductPagination] = useState({ page: 1, pages: 1, total: 0, limit: 20 });
+  const [productPage, setProductPage] = useState(1);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const ADMIN_PRODUCT_PAGE_SIZE = 20;
   
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -43,7 +47,7 @@ const Admin = () => {
 
   const [productForm, setProductForm] = useState({
     name: '', description: '', price: '', category_id: '',
-    stock_quantity: '', image_url: '', images: [], status: 'active', barcode: ''
+    stock_quantity: '', image_url: '', images: [], sizes: [], status: 'active', barcode: ''
   });
 
   const superAdmin = isSuperAdmin(user);
@@ -52,6 +56,7 @@ const Admin = () => {
     { id: 'dashboard', name: 'Analytics Hub', icon: LayoutDashboard },
     { id: 'products', name: 'Products Inventory', icon: Package }, 
     { id: 'categories', name: 'Categories', icon: Tags },
+    { id: 'sizes', name: 'Sizes', icon: Ruler },
     { id: 'orders', name: 'Orders', icon: Truck },
     { id: 'orders-report', name: 'Orders Report', icon: BarChart3 },
     { id: 'shipping-settings', name: 'Shipping & Tax', icon: ClipboardList },
@@ -60,21 +65,39 @@ const Admin = () => {
     { id: 'website-settings', name: 'Settings', icon: Settings },
   ];
 
+  const loadAdminProducts = async (page = 1, search = '') => {
+    const productsRes = await themeApi.getProducts({
+      page,
+      limit: ADMIN_PRODUCT_PAGE_SIZE,
+      include_inactive: true,
+      ...(search.trim() ? { search: search.trim() } : {}),
+    });
+    setProducts(productsRes.products || []);
+    const pagination = productsRes.pagination || {
+      page,
+      pages: 1,
+      total: productsRes.products?.length || 0,
+      limit: ADMIN_PRODUCT_PAGE_SIZE,
+    };
+    setProductPagination(pagination);
+    setProductPage(pagination.page || page);
+    return productsRes;
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (!isAuthenticated || !user) { setLoading(false); return; }
       try {
         const [productsRes, categoriesRes, ordersRes] = await Promise.all([
-          themeApi.getProducts(),
+          loadAdminProducts(1),
           themeApi.getCategories(),
-          themeApi.getAllOrders()
+          themeApi.getAllOrders({ limit: 500 })
         ]);
-        setProducts(productsRes.products || []);
         setCategories(categoriesRes || []);
         setOrders(ordersRes.orders || []);
         setStats({
-          totalProducts: productsRes.products?.length || 0,
-          totalOrders: ordersRes.orders?.length || 0,
+          totalProducts: productsRes.pagination?.total ?? productsRes.products?.length ?? 0,
+          totalOrders: ordersRes.pagination?.total ?? ordersRes.orders?.length ?? 0,
           totalRevenue: ordersRes.orders?.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0) || 0,
         });
       } catch (error) {
@@ -84,9 +107,22 @@ const Admin = () => {
     fetchData();
   }, [user, isAuthenticated]);
 
+  const handleProductPageChange = async (nextPage) => {
+    if (nextPage < 1 || nextPage > (productPagination.pages || 1)) return;
+    try {
+      await loadAdminProducts(nextPage, searchTerm);
+    } catch (error) {
+      toast.error('Failed to load products page');
+    }
+  };
+
   const handleAddProduct = () => {
     setEditingProduct(null);
-    setProductForm({ name: '', description: '', price: '', category_id: '', stock_quantity: '', status: 'active', barcode: '' });
+    setProductForm({
+      name: '', description: '', price: '', category_id: '',
+      stock_quantity: '', sizes: [], status: 'active', barcode: '',
+    });
+    setUploadedImages([]);
     fetchNextSku();
     setShowProductForm(true);
   };
@@ -100,7 +136,12 @@ const Admin = () => {
 
   const handleEditProduct = (product) => {
     setEditingProduct(product);
-    setProductForm({ ...product, status: product.is_active ? 'active' : 'inactive' });
+    setProductForm({
+      ...product,
+      sizes: Array.isArray(product.sizes) ? product.sizes : [],
+      status: product.is_active ? 'active' : 'inactive',
+    });
+    setUploadedImages(Array.isArray(product.images) ? product.images : []);
     setShowProductForm(true);
   };
 
@@ -109,7 +150,11 @@ const Admin = () => {
       try {
         await themeApi.deleteProduct(id);
         toast.success('Product removed from active inventory');
-        setProducts(prev => prev.filter(p => p.id !== id));
+        const productsRes = await loadAdminProducts(productPage, searchTerm);
+        setStats((prev) => ({
+          ...prev,
+          totalProducts: productsRes.pagination?.total ?? Math.max(0, (prev.totalProducts || 1) - 1),
+        }));
       } catch (error) {
         console.error("Delete Error:", error);
         toast.error('Failed to delete product');
@@ -137,12 +182,15 @@ const Admin = () => {
 
   const handleSaveProduct = async () => {
     try {
+      const sizes = Array.isArray(productForm.sizes) ? productForm.sizes : [];
+      const sizeTotal = sizes.reduce((n, s) => n + (parseInt(s.quantity, 10) || 0), 0);
       const productData = {
         ...productForm,
         price: parseFloat(productForm.price),
-        stock_quantity: parseInt(productForm.stock_quantity),
+        stock_quantity: sizes.length > 0 ? sizeTotal : parseInt(productForm.stock_quantity, 10) || 0,
+        sizes,
         image_url: uploadedImages[0] || productForm.image_url,
-        images: uploadedImages,
+        images: uploadedImages.length ? uploadedImages : (productForm.images || []),
         is_active: productForm.status === 'active'
       };
       if (editingProduct) {
@@ -154,10 +202,25 @@ const Admin = () => {
       }
       setShowProductForm(false);
       setUploadedImages([]);
-      const productsRes = await themeApi.getProducts();
-      setProducts(productsRes.products || []);
+      const productsRes = await loadAdminProducts(productPage, searchTerm);
+      setStats((prev) => ({
+        ...prev,
+        totalProducts: productsRes.pagination?.total ?? productsRes.products?.length ?? prev.totalProducts,
+      }));
     } catch (error) { 
       toast.error('Save Failed: ' + (error.response?.data?.error || error.message));
+    }
+  };
+
+  const runProductSearch = async () => {
+    try {
+      const productsRes = await loadAdminProducts(1, searchTerm);
+      setStats((prev) => ({
+        ...prev,
+        totalProducts: productsRes.pagination?.total ?? prev.totalProducts,
+      }));
+    } catch (error) {
+      toast.error('Search failed');
     }
   };
 
@@ -288,12 +351,16 @@ const Admin = () => {
                     products={products}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
+                    onSearch={runProductSearch}
+                    pagination={productPagination}
+                    onPageChange={handleProductPageChange}
                     handleAddProduct={handleAddProduct}
                     handleEditProduct={handleEditProduct}
                     handleDeleteProduct={handleDeleteProduct}
                   />
                 )}
                 {activeTab === 'categories' && <CategoryManagement categories={categories} onCategoriesChange={() => {}} />}
+                {activeTab === 'sizes' && <SizeManagement />}
                 {activeTab === 'orders' && <OrderManagement orders={orders} onOrdersChange={() => {}} />}
                 {activeTab === 'orders-report' && <OrdersReport />}
                 {activeTab === 'shipping-settings' && <ShippingSettings />}

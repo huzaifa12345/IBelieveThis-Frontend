@@ -179,6 +179,47 @@
   margin-bottom: 0;
 }
 
+/* --- Etsy-style size picker --- */
+.size-selector-wrap {
+  max-width: 420px;
+}
+
+.size-select-etsy {
+  background: #1a1a1a;
+  color: #f5f5f5;
+  border: 1px solid rgba(59, 143, 212, 0.45);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.size-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.size-btn {
+  border: 1px solid rgba(59, 143, 212, 0.45) !important;
+  color: #e8e8e8 !important;
+  background: transparent !important;
+  border-radius: 999px !important;
+  padding: 6px 14px !important;
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+}
+
+.size-btn.active,
+.size-btn:hover:not(:disabled) {
+  background: var(--brand-primary, #3B8FD4) !important;
+  border-color: var(--brand-primary, #3B8FD4) !important;
+  color: #fff !important;
+}
+
+.size-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* --- Action Buttons --- */
 .action-row {
   display: flex;
@@ -292,10 +333,13 @@
 }
 
 .original-price-tag {
-  font-size: 1.0;
-  color: #94a3b8;
+  font-size: 1.15rem;
+  line-height: 1.2;
+  color: #cbd5e1;
   text-decoration: line-through;
-  font-weight: 500;
+  text-decoration-thickness: 2px;
+  font-weight: 600;
+  opacity: 0.95;
 }
 
 .discount-badge {

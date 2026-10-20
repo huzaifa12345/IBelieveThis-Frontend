@@ -86,7 +86,7 @@ const SizeManagement = () => {
           <h4 className="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
             <Ruler size={22} className="text-warning" /> Inventory Sizes
           </h4>
-          <p className="text-muted small mb-0">Define product size variations (e.g., 2-3 Years, XL)</p>
+          <p className="text-muted small mb-0">Etsy-style size options shoppers pick at checkout (e.g. Small, Medium, Large, 1 inch)</p>
         </div>
       </div>
 
@@ -105,7 +105,7 @@ const SizeManagement = () => {
                 <input
                   type="text"
                   className="form-control form-control-lg bg-light border-0 shadow-none"
-                  placeholder="e.g., 6-12 Months"
+                  placeholder="e.g., Small / Medium / 2 inch"
                   style={{ fontSize: '0.95rem' }}
                   value={editingSize ? editingSize.size : newSize.size}
                   onChange={(e) => editingSize 
@@ -119,7 +119,7 @@ const SizeManagement = () => {
                 <textarea
                   className="form-control bg-light border-0 shadow-none"
                   rows="3"
-                  placeholder="Age group or specific measurements..."
+                  placeholder="Optional note, e.g. approx. diameter"
                   value={editingSize ? editingSize.description : newSize.description}
                   onChange={(e) => editingSize 
                     ? setEditingSize({ ...editingSize, description: e.target.value })

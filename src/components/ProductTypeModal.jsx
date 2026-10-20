@@ -4,6 +4,7 @@ import {
   Image as ImageIcon, Hash, Tag, 
   Layers, AlertCircle, UploadCloud, Trash2 
 } from 'lucide-react';
+import SizeManager from './SizeManager';
 
 const ProductModal = ({ 
   onClose, 
@@ -150,14 +151,21 @@ const ProductModal = ({
                           </div>
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label small fw-bold text-muted mb-1">Initial Stock Quantity</label>
+                          <label className="form-label small fw-bold text-muted mb-1">
+                            Total Stock {(productForm.sizes || []).length > 0 ? '(from sizes)' : ''}
+                          </label>
                           <input
                             type="number"
                             className="form-control border-0 bg-light shadow-none"
                             style={{ borderRadius: '8px' }}
-                            placeholder="0.00"
-                            value={productForm.stock_quantity}
+                            placeholder="0"
+                            value={
+                              (productForm.sizes || []).length > 0
+                                ? (productForm.sizes || []).reduce((n, s) => n + (parseInt(s.quantity, 10) || 0), 0)
+                                : productForm.stock_quantity
+                            }
                             onChange={(e) => setProductForm({ ...productForm, stock_quantity: e.target.value })}
+                            disabled={(productForm.sizes || []).length > 0}
                           />
                         </div>
                         <div className="col-md-6">
@@ -173,6 +181,19 @@ const ProductModal = ({
                           <small className="text-muted d-block mt-1" style={{ fontSize: '0.7rem' }}>
                             Product barcode for inventory tracking
                           </small>
+                        </div>
+                        <div className="col-12">
+                          <SizeManager
+                            sizes={productForm.sizes || []}
+                            onChange={(nextSizes) => {
+                              const total = nextSizes.reduce((n, s) => n + (parseInt(s.quantity, 10) || 0), 0);
+                              setProductForm({
+                                ...productForm,
+                                sizes: nextSizes,
+                                stock_quantity: String(total),
+                              });
+                            }}
+                          />
                         </div>
                       </div>
                     </div>
