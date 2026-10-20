@@ -78,7 +78,7 @@ const Products = ({
         <div className="card border-0 shadow-sm" style={{ borderRadius: '12px', overflow: 'hidden' }}>
           <div className="card-body p-0">
             <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
+              <table className="table table-hover align-middle mb-0 admin-products-table" style={{ color: '#0f172a' }}>
                 <thead className="bg-light">
                   <tr style={{ fontSize: '0.85rem', color: '#64748b' }}>
                     <th className="px-4 py-3 border-0">PRODUCT SPECIFICATIONS</th>
@@ -89,7 +89,7 @@ const Products = ({
                     <th className="text-end px-4 py-3 border-0">ACTIONS</th>
                   </tr>
                 </thead>
-                <tbody className="border-top-0">
+                <tbody className="border-top-0" style={{ color: '#0f172a' }}>
                   {(products || []).length > 0 ? (
                     products.map((product) => (
                       <tr key={product.id}>
@@ -102,30 +102,38 @@ const Products = ({
                               style={{ width: 48, height: 48, objectFit: 'cover' }}
                             />
                             <div>
-                              <div className="fw-semibold text-dark">{product.name}</div>
-                              <code className="text-muted" style={{ fontSize: '0.75rem' }}>
+                              <div className="fw-semibold" style={{ color: '#0f172a' }}>{product.name}</div>
+                              <code style={{ fontSize: '0.75rem', color: '#64748b' }}>
                                 SKU-{(product.sku || product.id || '').toString().padStart(3, '0')}
                               </code>
                             </div>
                           </div>
                         </td>
-                        <td className="text-center">
+                        <td className="text-center align-middle" style={{ color: '#334155', fontWeight: 600 }}>
                           {product.category_relation?.name || product.category || '—'}
                         </td>
-                        <td className="text-center fw-semibold">
+                        <td className="text-center align-middle" style={{ color: '#0f172a', fontWeight: 700 }}>
                           ${Number(product.price || 0).toFixed(2)}
                         </td>
-                        <td className="text-center">
-                          <span className={`badge ${(product.stock_quantity || 0) > 10 ? 'bg-success' : 'bg-danger'} rounded-pill`} style={{ fontSize: '0.75rem' }}>
-                            {product.stock_quantity ?? 0}
-                          </span>
-                          {(product.stock_quantity || 0) <= 10 && (
-                            <small className="text-danger mt-1 d-flex align-items-center justify-content-center gap-1" style={{ fontSize: '0.65rem' }}>
-                              <AlertCircle size={10} /> Low Stock
-                            </small>
-                          )}
+                        <td className="align-middle">
+                          <div className="d-flex flex-column align-items-center justify-content-center gap-1">
+                            <span
+                              className={`badge ${(product.stock_quantity || 0) > 10 ? 'bg-success' : 'bg-danger'} rounded-pill`}
+                              style={{ fontSize: '0.75rem' }}
+                            >
+                              {product.stock_quantity ?? 0}
+                            </span>
+                            {(product.stock_quantity || 0) <= 10 && (
+                              <small
+                                className="d-inline-flex align-items-center gap-1"
+                                style={{ fontSize: '0.65rem', color: '#dc2626', fontWeight: 600 }}
+                              >
+                                <AlertCircle size={10} /> Low Stock
+                              </small>
+                            )}
+                          </div>
                         </td>
-                        <td className="text-center">
+                        <td className="text-center align-middle">
                           {product.is_active !== false ? (
                             <span className="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
                               <CheckCircle2 size={14} /> ACTIVE
