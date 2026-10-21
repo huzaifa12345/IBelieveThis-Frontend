@@ -150,7 +150,7 @@ const Admin = () => {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (window.confirm("Are you sure you want to archive this formulation?")) {
+    if (window.confirm("Are you sure you want to archive this product?")) {
       try {
         await themeApi.deleteProduct(id);
         toast.success('Product removed from active inventory');
