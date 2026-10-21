@@ -720,10 +720,14 @@ const ThemeProductDetail = () => {
 
               {/* GEO / AEO: structured specs table for crawlers + answer engines */}
               <section className="spec-card mb-4" aria-labelledby="product-specs-heading">
-                <h2 id="product-specs-heading" className="h5 text-navy fw-bold mb-3">
+                <h2 id="product-specs-heading" className="h5 text-navy fw-bold">
                   Product Overview &amp; Specifications
                 </h2>
-                <table className="table table-bordered text-start small mb-3 spec-table">
+                
+                {product.description ? (
+                  <p className="description-text">{product.description}</p>
+                ) : null}
+                <table className="table table-bordered text-start small mb-3 spec-table mt-3">
                   <tbody>
                     <tr>
                       <th scope="row" className="spec-label w-35">Brand</th>
@@ -753,9 +757,6 @@ const ThemeProductDetail = () => {
                     </tr>
                   </tbody>
                 </table>
-                {product.description ? (
-                  <p className="description-text">{product.description}</p>
-                ) : null}
               </section>
 
               {requiresSize && (
@@ -803,9 +804,9 @@ const ThemeProductDetail = () => {
 
               <div className="action-row mb-5">
                 <div className="qty-input">
-                  <button onClick={() => setQuantity(q => Math.max(1, q-1))}>-</button>
-                  <input type="number" value={quantity} readOnly />
-                  <button onClick={() => setQuantity(q => q+1)}>+</button>
+                  <button type="button" onClick={() => setQuantity(q => Math.max(1, q-1))}>-</button>
+                  <input type="number" value={quantity} readOnly aria-label="Quantity" />
+                  <button type="button" onClick={() => setQuantity(q => q+1)}>+</button>
                 </div>
                 <div className="action-buttons">
                   <button className="btn btn-add-cart" onClick={handleAddToCart}>

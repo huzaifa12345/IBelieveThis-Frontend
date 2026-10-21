@@ -1,0 +1,72 @@
+/**
+ * Store-wide responsive layout overrides.
+ * Bootstrap caps .container at 1140px — on large screens / browser zoom-out
+ * that leaves a huge empty void. Scale the content band with the viewport.
+ */
+
+/* Kill Vite template leftovers if App.css is ever imported */
+#root {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: initial !important;
+}
+
+.App,
+.App > main {
+  width: 100%;
+  max-width: none;
+}
+
+/* Fluid-but-readable containers across store pages */
+.container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: clamp(16px, 3vw, 40px) !important;
+  padding-right: clamp(16px, 3vw, 40px) !important;
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: min(720px, 94vw) !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .container {
+    max-width: min(960px, 94vw) !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: min(1140px, 94vw) !important;
+  }
+}
+
+@media (min-width: 1400px) {
+  .container {
+    max-width: min(1320px, 94vw) !important;
+  }
+}
+
+@media (min-width: 1600px) {
+  .container {
+    max-width: min(1480px, 92vw) !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  .container {
+    max-width: min(1680px, 90vw) !important;
+  }
+}
+
+@media (min-width: 2560px) {
+  .container {
+    max-width: min(1920px, 88vw) !important;
+  }
+}

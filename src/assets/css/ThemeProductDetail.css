@@ -33,7 +33,7 @@
 .main-view-img {
   position: relative;
   width: 100%;
-  height: 500px;
+  height: clamp(280px, 42vw, 620px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -181,7 +181,8 @@
 
 /* --- Etsy-style size picker --- */
 .size-selector-wrap {
-  max-width: 420px;
+  max-width: min(480px, 100%);
+  width: 100%;
 }
 
 .size-select-etsy {
@@ -224,24 +225,30 @@
 .action-row {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 14px;
+  width: 100%;
+  max-width: min(520px, 100%);
 }
 
 .action-buttons {
   width: 100%;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
 .qty-input {
   display: flex;
+  align-items: stretch;
   background: #fff;
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border-color);
   box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+  width: fit-content;
+  max-width: 100%;
 }
 
 .qty-input button {
@@ -557,7 +564,7 @@
   .price-tag { font-size: 2rem; }
   .review-section-card { padding: 30px 20px; }
   .review-content-body { padding-left: 0; margin-top: 15px; }
-  .main-view-img { height: auto; width: 100%; }
+  .main-view-img { height: auto; min-height: 260px; width: 100%; }
   
   .image-main-card {
     position: relative;
@@ -575,5 +582,24 @@
   .thumb-img {
     width: 85px;
     height: 85px;
+  }
+
+  .action-row,
+  .size-selector-wrap {
+    max-width: 100%;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 1400px) {
+  .product-main-title {
+    font-size: clamp(2rem, 2.2vw, 2.6rem);
+  }
+
+  .main-view-img {
+    height: clamp(480px, 36vw, 680px);
   }
 }

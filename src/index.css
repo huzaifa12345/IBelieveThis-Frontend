@@ -46,9 +46,13 @@ body {
   background: none;
 }
 
+/* Base container; breakpoint scaling lives in theme-fixes.css (after Bootstrap) */
 .container {
-  max-width: 100%;
-  padding: 0 40px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(16px, 3vw, 40px);
+  padding-right: clamp(16px, 3vw, 40px);
 }
 
 .banner_bg_main,

@@ -19,9 +19,9 @@
 }
 
 .fb-container {
-  max-width: 1320px;
+  max-width: min(1680px, 90vw);
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 clamp(16px, 3vw, 40px);
   display: flex;
   align-items: center;
   justify-content: space-between;
