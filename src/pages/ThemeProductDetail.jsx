@@ -351,7 +351,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaTruck, FaShoppingCart, FaShieldAlt, FaInfoCircle, FaCheckCircle, FaUndo, FaLock } from 'react-icons/fa';
+import { FaStar, FaTruck, FaShoppingCart, FaShieldAlt, FaInfoCircle, FaCheckCircle, FaUndo, FaLock, FaSearch, FaArrowRight } from 'react-icons/fa';
 import { ShoppingCart, Star, Truck, Shield } from 'lucide-react';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
@@ -365,6 +365,7 @@ import { useStoreSettings } from '../hooks/useStoreSettings';
 import {
   productPath,
   productPathSlug,
+  categoryPath,
   setPageSeo,
   injectJsonLd,
   removeJsonLd,
@@ -373,7 +374,9 @@ import {
   buildProductOfferExtras,
 } from '../utils/seo';
 import { galleryImage, cloudinarySrcSet, cardImage } from '../utils/cloudinary';
+import { addProductFromCard } from '../utils/cartHelpers';
 import '../assets/css/ThemeProductDetail.css';
+import '../assets/css/ThemeHome.css';
 
 const ThemeProductDetail = () => {
   const { slug } = useParams();
@@ -390,15 +393,53 @@ const ThemeProductDetail = () => {
   const [reviewForm, setReviewForm] = useState({ name: '', rating: '', comment: '', review_images: [] });
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const [shipOpen, setShipOpen] = useState(false);
+  const [formRating, setFormRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const { get } = useStoreSettings();
   const returnDays = get('return_window_days', '7');
 
   const themeColor = "#001d3d"; // Navy Blue
 
+  const reviewAvg =
+    reviews.length > 0
+      ? reviews.reduce((a, b) => a + Number(b.rating || 0), 0) / reviews.length
+      : 0;
+
   useEffect(() => {
     fetchProduct();
     fetchSizes();
   }, [slug]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadRelated = async () => {
+      if (!product?.id) {
+        setRelatedProducts([]);
+        return;
+      }
+      const categoryKey = product.category_id || product.category_relation?.id || product.category;
+      if (!categoryKey) {
+        setRelatedProducts([]);
+        return;
+      }
+      try {
+        const data = await themeApi.getProductsByCategory(categoryKey, {
+          page: 1,
+          limit: 8,
+          sort_by: 'created_at',
+        });
+        const list = (data.products || data || []).filter((p) => p.id !== product.id).slice(0, 4);
+        if (!cancelled) setRelatedProducts(list);
+      } catch {
+        if (!cancelled) setRelatedProducts([]);
+      }
+    };
+    loadRelated();
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.id, product?.category_id, product?.category]);
 
   const fetchSizes = async () => {
     try {
@@ -591,40 +632,44 @@ const ThemeProductDetail = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const name = formData.get('name');
-    const rating = formData.get('rating');
     const comment = formData.get('comment');
-    
-    if (!name || !rating || !comment) {
+    const ratingValue = formRating;
+
+    if (!name || !comment) {
       toast.error('Please fill in all required fields');
       return;
     }
-    
-    const ratingValue = parseInt(rating);
-    if (isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
-      toast.error('Please select a valid rating between 1 and 5');
+    if (!ratingValue || ratingValue < 1 || ratingValue > 5) {
+      toast.error('Please select a star rating');
       return;
     }
-    
+
     try {
-      const reviewData = {
+      await themeApi.createReview({
         customer_name: name.trim(),
         rating: ratingValue,
         comment: comment.trim(),
-        product_id: product?.id || null
-      };
-      
-      await themeApi.createReview(reviewData);
-      toast.success('Review submitted successfully!');
+        product_id: product?.id || null,
+      });
+      toast.success('Thank you — your review was submitted!');
       e.target.reset();
-      
-      if (product && product.id) {
+      setFormRating(0);
+      setHoverRating(0);
+
+      if (product?.id) {
         const reviewsData = await themeApi.getProductReviews(product.id);
         setReviews(reviewsData?.reviews || []);
       }
-      
     } catch (error) {
       toast.error('Failed to submit review: ' + (error.response?.data?.error || error.message));
     }
+  };
+
+  const formatReviewDate = (value) => {
+    if (!value) return '';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   if (loading) return (
@@ -880,65 +925,118 @@ const ThemeProductDetail = () => {
         <div className="row">
           <div className="col-12">
             <div className="review-section-card">
-              <h3 className="section-heading mb-4 text-center">Customer Satisfaction</h3>
-              <div className="row g-4">
-                <div className="col-md-4">
+              <div className="review-section-header text-center mb-4">
+                <h3 className="section-heading mb-3">Customer Reviews</h3>
+                {reviews.length > 0 ? (
+                  <div className="review-summary-bar">
+                    <div className="review-summary-score">
+                      <span className="review-summary-number">{reviewAvg.toFixed(1)}</span>
+                      <div className="stars-wrapper review-summary-stars">
+                        {[...Array(5)].map((_, s) => (
+                          <FaStar key={s} size={16} color={s < Math.round(reviewAvg) ? '#fbbf24' : '#334155'} />
+                        ))}
+                      </div>
+                      <span className="review-summary-count">
+                        Based on {reviews.length} review{reviews.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="review-summary-empty">No reviews yet — be the first to share your experience.</p>
+                )}
+              </div>
+
+              <div className="row g-4 align-items-start">
+                <div className="col-lg-4">
                   <div className="write-review-card">
-                    <h5>Post a Review</h5>
-                    <form onSubmit={handleReviewSubmit}>
-                      <input type="text" name="name" className="form-control mb-2" placeholder="Your Name" required />
-                      <select name="rating" className="form-control mb-2" required>
-                        <option value="">Select Rating</option>
-                        <option value="5">5 Stars - Excellent</option>
-                        <option value="4">4 Stars - Good</option>
-                        <option value="3">3 Stars - Average</option>
-                        <option value="2">2 Stars - Poor</option>
-                        <option value="1">1 Star - Very Poor</option>
-                      </select>
-                      <textarea name="comment" className="form-control mb-3" placeholder="Share your experience..." rows="3" required></textarea>
-                      <button className="btn btn-submit-review w-100">Submit Review</button>
+                    <h5>Write a review</h5>
+                    <p className="write-review-hint">Honest feedback helps other riders choose with confidence.</p>
+                    <form onSubmit={handleReviewSubmit} className="review-form">
+                      <label className="review-label">Your name</label>
+                      <input
+                        type="text"
+                        name="name"
+                        className="form-control review-input"
+                        placeholder="How should we credit you?"
+                        required
+                      />
+
+                      <label className="review-label">Your rating</label>
+                      <div className="review-star-picker" role="group" aria-label="Rating">
+                        {[1, 2, 3, 4, 5].map((n) => {
+                          const active = (hoverRating || formRating) >= n;
+                          return (
+                            <button
+                              key={n}
+                              type="button"
+                              className={`review-star-btn ${active ? 'active' : ''}`}
+                              aria-label={`${n} star${n > 1 ? 's' : ''}`}
+                              onMouseEnter={() => setHoverRating(n)}
+                              onMouseLeave={() => setHoverRating(0)}
+                              onClick={() => setFormRating(n)}
+                            >
+                              <FaStar size={22} />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <label className="review-label">Your review</label>
+                      <textarea
+                        name="comment"
+                        className="form-control review-input"
+                        placeholder="Fit, quality, shipping — what stood out?"
+                        rows="4"
+                        required
+                      />
+                      <button type="submit" className="btn btn-submit-review w-100">
+                        Submit review
+                      </button>
                     </form>
                   </div>
                 </div>
 
-                <div className="col-md-8">
-                  {reviews.length === 0 ? (
-                    <div className="empty-reviews p-5 text-center">
-                      <p className="mb-0 text-muted">No reviews yet. Be the first to rate this product!</p>
+                <div className="col-lg-8">
+                  {reviewsLoading ? (
+                    <div className="empty-reviews text-center">
+                      <p className="mb-0">Loading reviews…</p>
+                    </div>
+                  ) : reviews.length === 0 ? (
+                    <div className="empty-reviews text-center">
+                      <FaStar size={28} className="empty-reviews-icon mb-3" />
+                      <p className="mb-0">Reviews from real customers will show up here.</p>
                     </div>
                   ) : (
                     <div className="reviews-scroll-area">
-                      {reviews.map((r, i) => (
-                        <div key={i} className="review-card-modern mb-3">
-                          <div className="d-flex justify-content-between align-items-start">
+                      {reviews.map((r) => (
+                        <article key={r.id || `${r.customer_name}-${r.created_at}`} className="review-card-modern">
+                          <div className="review-card-top">
                             <div className="d-flex align-items-center gap-3">
-                              <div className="user-avatar-circle">
-                                {r.customer_name.charAt(0).toUpperCase()}
+                              <div className="user-avatar-circle" aria-hidden="true">
+                                {(r.customer_name || '?').charAt(0).toUpperCase()}
                               </div>
-                              <div>
-                                <h6 className="mb-0 fw-bold ml-2 text-white">
-                                  {r.customer_name} 
-                                  <span className="verified-badge-text">
-                                    <FaCheckCircle className="ms-1" /> Verified Buyer
-                                  </span>
-                                </h6>
-                                <small className="text-secondary ml-2">Purchased recently</small>
+                              <div className="review-card-meta">
+                                <div className="review-card-name-row">
+                                  <h6 className="review-card-name mb-0">{r.customer_name}</h6>
+                                  {r.is_verified ? (
+                                    <span className="verified-badge-text">
+                                      <FaCheckCircle size={11} /> Verified
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <time className="review-card-date" dateTime={r.created_at || undefined}>
+                                  {formatReviewDate(r.created_at) || 'Recent'}
+                                </time>
                               </div>
                             </div>
-                            <div className="stars-wrapper">
+                            <div className="stars-wrapper" aria-label={`${r.rating} out of 5 stars`}>
                               {[...Array(5)].map((_, s) => (
-                                <FaStar 
-                                  key={s} 
-                                  size={14} 
-                                  color={s < r.rating ? "#ffc300" : "#e0e0e0"} 
-                                />
+                                <FaStar key={s} size={14} color={s < r.rating ? '#fbbf24' : '#334155'} />
                               ))}
                             </div>
                           </div>
-                          <div className="review-content-body mt-3">
-                            <p className="mb-0">{r.comment}</p>
-                          </div>
-                        </div>
+                          <p className="review-card-body mb-0">{r.comment}</p>
+                        </article>
                       ))}
                     </div>
                   )}
@@ -947,6 +1045,104 @@ const ThemeProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {relatedProducts.length > 0 && (
+          <section className="related-products-section mt-5 mb-4" aria-labelledby="related-products-heading">
+            <div className="related-products-header">
+              <div>
+                <h3 id="related-products-heading" className="section-heading text-start mb-1">
+                  More from {categoryName}
+                </h3>
+                <p className="related-products-sub">Same category — pick another piece of gear</p>
+              </div>
+              {(product.category_relation || product.category_id) && (
+                <Link
+                  to={categoryPath(product.category_relation || { id: product.category_id, name: categoryName })}
+                  className="related-products-link"
+                >
+                  View all <FaArrowRight size={12} />
+                </Link>
+              )}
+            </div>
+
+            <div className="product-grid-modern related-products-grid">
+              {relatedProducts.map((related) => (
+                <div key={related.id} className="item-card">
+                  <div className="item-thumb" onClick={() => navigate(productPath(related))}>
+                    <img
+                      src={
+                        cardImage(related.images?.[0] || related.image_url) ||
+                        related.images?.[0] ||
+                        related.image_url ||
+                        '/placeholder.png'
+                      }
+                      srcSet={cloudinarySrcSet(related.images?.[0] || related.image_url, [320, 400, 640])}
+                      sizes="(max-width: 768px) 45vw, 22vw"
+                      width={400}
+                      height={400}
+                      loading="lazy"
+                      decoding="async"
+                      alt={related.name}
+                    />
+                    {related.discount_price && related.discount_price < related.price && (
+                      <div className="discount-badge-image">
+                        -{Math.round(((related.price - related.discount_price) / related.price) * 100)}%
+                      </div>
+                    )}
+                    {related.reviewCount > 0 ? (
+                      <div className="rating-badge-image">
+                        <FaStar className="rating-badge-star" />
+                        <span className="rating-badge-score">{related.averageRating}</span>
+                        <span className="rating-badge-count">({related.reviewCount})</span>
+                      </div>
+                    ) : null}
+                    <div className="item-overlay">
+                      <button
+                        type="button"
+                        className="circle-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addProductFromCard(related, { addToCart, navigate, toast, productPath });
+                        }}
+                      >
+                        <FaShoppingCart />
+                      </button>
+                      <button
+                        type="button"
+                        className="circle-btn"
+                        onClick={() => navigate(productPath(related))}
+                      >
+                        <FaSearch />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="item-details">
+                    <h3 className="item-name">{related.name}</h3>
+                    <div className="item-pricing">
+                      {related.discount_price && related.discount_price < related.price ? (
+                        <>
+                          <span className="price-original">${related.price}</span>
+                          <span className="price-now">${related.discount_price}</span>
+                        </>
+                      ) : (
+                        <span className="price-now">${related.price}</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="card-buy-btn"
+                      onClick={() =>
+                        addProductFromCard(related, { addToCart, navigate, toast, productPath })
+                      }
+                    >
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
       <ThemeFooter />
     </div>
