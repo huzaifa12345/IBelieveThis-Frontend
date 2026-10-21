@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Star, Plus, Trash2, RefreshCw, Check } from 'lucide-react';
 import { themeApi } from '../../services/themeApi';
 import toast from 'react-hot-toast';
+import '../../assets/css/admin-email-retry.css';
 
 const emptyForm = {
   product_id: '',
@@ -88,28 +89,28 @@ const ReviewManagement = ({ products = [] }) => {
   };
 
   return (
-    <div className="review-management">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="fe-panel review-management animate__animated animate__fadeIn">
+      <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
         <div>
-          <h4 className="fw-bold mb-1">Product Reviews</h4>
-          <p className="text-muted small mb-0">
+          <h4 className="fw-bold mb-1 text-dark">Product Reviews</h4>
+          <p className="text-secondary small mb-0">
             Add or import real customer reviews (e.g. from Etsy). Never publish fake reviews.
           </p>
         </div>
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={load}>
+        <button type="button" className="btn btn-outline-secondary btn-sm text-dark" onClick={load}>
           <RefreshCw size={14} className="me-1" /> Refresh
         </button>
       </div>
 
-      <form className="card border-0 shadow-sm p-4 mb-4" onSubmit={onSubmit}>
-        <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
-          <Plus size={16} /> Add / import review
+      <form className="card border-0 shadow-sm p-4 mb-4 bg-white" onSubmit={onSubmit}>
+        <h6 className="fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
+          <Plus size={16} className="text-primary" /> Add / import review
         </h6>
         <div className="row g-3">
           <div className="col-md-6">
-            <label className="form-label small fw-bold">Product *</label>
+            <label className="form-label small fw-bold text-dark">Product *</label>
             <select
-              className="form-select"
+              className="form-select bg-white text-dark border"
               name="product_id"
               value={form.product_id}
               onChange={onChange}
@@ -124,9 +125,9 @@ const ReviewManagement = ({ products = [] }) => {
             </select>
           </div>
           <div className="col-md-6">
-            <label className="form-label small fw-bold">Customer name *</label>
+            <label className="form-label small fw-bold text-dark">Customer name *</label>
             <input
-              className="form-control"
+              className="form-control bg-white text-dark border"
               name="customer_name"
               value={form.customer_name}
               onChange={onChange}
@@ -134,8 +135,13 @@ const ReviewManagement = ({ products = [] }) => {
             />
           </div>
           <div className="col-md-3">
-            <label className="form-label small fw-bold">Rating</label>
-            <select className="form-select" name="rating" value={form.rating} onChange={onChange}>
+            <label className="form-label small fw-bold text-dark">Rating</label>
+            <select
+              className="form-select bg-white text-dark border"
+              name="rating"
+              value={form.rating}
+              onChange={onChange}
+            >
               {[5, 4, 3, 2, 1].map((n) => (
                 <option key={n} value={n}>
                   {n} star{n > 1 ? 's' : ''}
@@ -144,10 +150,10 @@ const ReviewManagement = ({ products = [] }) => {
             </select>
           </div>
           <div className="col-md-3">
-            <label className="form-label small fw-bold">Review date</label>
+            <label className="form-label small fw-bold text-dark">Review date</label>
             <input
               type="date"
-              className="form-control"
+              className="form-control bg-white text-dark border"
               name="review_date"
               value={form.review_date}
               onChange={onChange}
@@ -163,15 +169,15 @@ const ReviewManagement = ({ products = [] }) => {
                 checked={form.is_verified}
                 onChange={onChange}
               />
-              <label className="form-check-label" htmlFor="is_verified">
+              <label className="form-check-label text-dark" htmlFor="is_verified">
                 Verified purchase / imported from Etsy
               </label>
             </div>
           </div>
           <div className="col-12">
-            <label className="form-label small fw-bold">Review text *</label>
+            <label className="form-label small fw-bold text-dark">Review text *</label>
             <textarea
-              className="form-control"
+              className="form-control bg-white text-dark border"
               name="comment"
               rows={3}
               value={form.comment}
@@ -180,7 +186,12 @@ const ReviewManagement = ({ products = [] }) => {
             />
           </div>
           <div className="col-12">
-            <button type="submit" className="btn btn-primary" disabled={saving}>
+            <button
+              type="submit"
+              className="btn btn-primary fw-bold"
+              style={{ backgroundColor: '#f26522', border: 'none' }}
+              disabled={saving}
+            >
               {saving ? 'Saving…' : 'Add review'}
             </button>
           </div>
@@ -188,9 +199,11 @@ const ReviewManagement = ({ products = [] }) => {
       </form>
 
       {loading ? (
-        <p className="text-muted">Loading reviews…</p>
+        <p className="text-secondary bg-white p-3 rounded shadow-sm mb-0">Loading reviews…</p>
       ) : reviews.length === 0 ? (
-        <p className="text-muted">No reviews yet. Add real customer feedback above.</p>
+        <p className="text-secondary bg-white p-3 rounded shadow-sm mb-0">
+          No reviews yet. Add real customer feedback above.
+        </p>
       ) : (
         <div className="table-responsive bg-white rounded shadow-sm">
           <table className="table align-middle mb-0">
@@ -208,8 +221,8 @@ const ReviewManagement = ({ products = [] }) => {
             <tbody>
               {reviews.map((r) => (
                 <tr key={r.id}>
-                  <td className="small">{r.product?.name || r.product_id}</td>
-                  <td>
+                  <td className="small fw-semibold">{r.product?.name || r.product_id}</td>
+                  <td className="text-dark">
                     {r.customer_name}
                     {r.is_verified ? (
                       <span className="badge bg-success ms-1" title="Verified">
@@ -217,19 +230,19 @@ const ReviewManagement = ({ products = [] }) => {
                       </span>
                     ) : null}
                   </td>
-                  <td>
-                    <Star size={12} className="text-warning me-1" />
+                  <td className="text-dark">
+                    <Star size={12} className="text-warning me-1" fill="#f59e0b" />
                     {r.rating}
                   </td>
-                  <td className="small" style={{ maxWidth: 280 }}>
+                  <td className="small text-dark" style={{ maxWidth: 280 }}>
                     {r.comment}
                   </td>
-                  <td className="small text-nowrap">
+                  <td className="small text-nowrap text-dark">
                     {r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}
                   </td>
                   <td>
                     <select
-                      className="form-select form-select-sm"
+                      className="form-select form-select-sm bg-white text-dark border"
                       value={r.status}
                       onChange={(e) => setStatus(r.id, e.target.value)}
                     >

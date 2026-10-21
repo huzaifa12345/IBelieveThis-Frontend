@@ -266,7 +266,7 @@
   position: absolute;
   top: 12px;
   left: 12px;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: var(--grad-electric, var(--brand-gradient));
   color: white;
   font-size: 0.7rem;
   font-weight: 700;
@@ -275,8 +275,46 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 4px 12px rgba(43, 108, 176, 0.3);
   border: 2px solid white;
+}
+
+.rating-badge-image {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 20px;
+  z-index: 10;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  border: 2px solid #fbbf24;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.rating-badge-star {
+  color: #fbbf24 !important;
+  fill: #fbbf24;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.rating-badge-score {
+  color: #fff;
+  font-weight: 800;
+}
+
+.rating-badge-count {
+  color: #fde68a;
+  font-weight: 600;
+  font-size: 0.68rem;
 }
 
 .price-now {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Mail, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import '../../assets/css/admin-email-retry.css';
 
 const apiBase = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
@@ -44,23 +45,23 @@ const ContactMessages = () => {
   };
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
+    <div className="fe-panel">
+      <div className="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
         <div>
-          <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
+          <h4 className="fw-bold mb-1 d-flex align-items-center gap-2 text-dark">
             <Mail size={22} /> Contact Messages
           </h4>
-          <p className="text-muted small mb-0">Messages submitted from the store Contact page.</p>
+          <p className="text-secondary small mb-0">Messages submitted from the store Contact page.</p>
         </div>
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={load}>
+        <button type="button" className="btn btn-outline-secondary btn-sm text-dark" onClick={load}>
           <RefreshCw size={14} className="me-1" /> Refresh
         </button>
       </div>
 
       {loading ? (
-        <p className="text-muted">Loading…</p>
+        <p className="text-secondary bg-white p-3 rounded shadow-sm mb-0">Loading…</p>
       ) : messages.length === 0 ? (
-        <p className="text-muted">No messages yet.</p>
+        <p className="text-secondary bg-white p-3 rounded shadow-sm mb-0">No messages yet.</p>
       ) : (
         <div className="table-responsive bg-white rounded shadow-sm">
           <table className="table align-middle mb-0">
@@ -76,20 +77,20 @@ const ContactMessages = () => {
             <tbody>
               {messages.map((m) => (
                 <tr key={m.id}>
-                  <td className="small text-nowrap">
+                  <td className="small text-nowrap text-dark">
                     {m.created_at ? new Date(m.created_at).toLocaleString() : '—'}
                   </td>
-                  <td className="small">
+                  <td className="small text-dark">
                     <div className="fw-semibold">{m.name}</div>
                     <a href={`mailto:${m.email}`}>{m.email}</a>
                   </td>
-                  <td className="small">{m.order_number || '—'}</td>
-                  <td className="small" style={{ maxWidth: 360, whiteSpace: 'pre-wrap' }}>
+                  <td className="small text-dark">{m.order_number || '—'}</td>
+                  <td className="small text-dark" style={{ maxWidth: 360, whiteSpace: 'pre-wrap' }}>
                     {m.message}
                   </td>
                   <td>
                     <select
-                      className="form-select form-select-sm"
+                      className="form-select form-select-sm bg-white text-dark border"
                       value={m.status || 'new'}
                       onChange={(e) => setStatus(m.id, e.target.value)}
                     >

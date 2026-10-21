@@ -107,6 +107,16 @@ const AllProducts = () => {
             -{Math.round(((product.price - product.discount_price) / product.price) * 100)}%
           </div>
         )}
+        {product.reviewCount > 0 ? (
+          <div
+            className="rating-badge-image"
+            title={`${product.averageRating} from ${product.reviewCount} review${product.reviewCount === 1 ? '' : 's'}`}
+          >
+            <Star size={11} className="rating-badge-star" fill="#fbbf24" />
+            <span className="rating-badge-score">{product.averageRating}</span>
+            <span className="rating-badge-count">({product.reviewCount})</span>
+          </div>
+        ) : null}
         <div className="item-overlay">
           <button
             type="button"
@@ -133,12 +143,6 @@ const AllProducts = () => {
           <h5 className="item-name" title={product.name}>
             {product.name}
           </h5>
-          {product.reviewCount > 0 ? (
-            <div className="item-rating small text-muted mb-1">
-              <Star size={12} className="text-warning me-1" />
-              {product.averageRating} ({product.reviewCount})
-            </div>
-          ) : null}
           <div className="item-pricing">
             {product.discount_price && product.discount_price < product.price ? (
               <>

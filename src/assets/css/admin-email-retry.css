@@ -11,7 +11,39 @@
 }
 
 .fe-panel {
-  color: #1f2937;
+  color: #1f2937 !important;
+}
+
+.fe-panel h4,
+.fe-panel h5,
+.fe-panel h6,
+.fe-panel label,
+.fe-panel .form-label,
+.fe-panel .form-check-label,
+.fe-panel p {
+  color: #1f2937 !important;
+}
+
+.fe-panel .text-muted,
+.fe-panel .text-secondary {
+  color: #64748b !important;
+}
+
+.fe-panel .form-control,
+.fe-panel .form-select {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.fe-panel .form-control::placeholder {
+  color: #94a3b8 !important;
+}
+
+.fe-panel .form-control:focus,
+.fe-panel .form-select:focus {
+  border-color: #f26522 !important;
+  box-shadow: 0 0 0 0.2rem rgba(242, 101, 34, 0.15) !important;
 }
 
 .fe-panel .card {
