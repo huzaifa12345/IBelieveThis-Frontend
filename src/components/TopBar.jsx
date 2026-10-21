@@ -167,18 +167,28 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
         </div>
       </div>
 
-      {/* Main Single Row Links Bar (Bravo Bells Theme) */}
+      {/* Main Single Row Links Bar */}
       <nav className="ts-main-navbar">
         <div className="container d-flex align-items-center justify-content-between">
+          {/* Left: Hamburger (desktop) — mirrors search/cart on the right */}
+          <div className="ts-left-actions d-none d-lg-flex align-items-center">
+            <button
+              type="button"
+              className="ts-action-icon-btn"
+              onClick={onMenuToggle}
+              aria-label="Open menu"
+            >
+              <FaBars />
+            </button>
+          </div>
+
           <ul className="ts-nav-links d-none d-lg-flex m-0 p-0">
-            {/* 1. Contact */}
             <li className="ts-nav-item">
               <Link to="/contact" className={`ts-nav-link ${isActive('/contact')}`}>
                 CONTACT
               </Link>
             </li>
 
-            {/* 2. Cart Dropdown */}
             <li className="ts-nav-item ts-dropdown">
               <span className="ts-nav-link">
                 CART <FaChevronDown className="ts-arrow-icon" />
@@ -202,14 +212,12 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
               </ul>
             </li>
 
-            {/* 3. A Bell's Purpose */}
             <li className="ts-nav-item">
-              <Link to="/bell-purpose" className={`ts-nav-link ${isActive('/bell-purpose')}`}>
-                A BELL'S PURPOSE
+              <Link to="/about" className={`ts-nav-link ${isActive('/about')}`}>
+                ABOUT
               </Link>
             </li>
 
-            {/* 4. Dynamic Shop Products Dropdown */}
             <li className="ts-nav-item ts-dropdown">
               <span className="ts-nav-link">
                 SHOP PRODUCTS <FaChevronDown className="ts-arrow-icon" />
@@ -231,7 +239,7 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
               </ul>
             </li>
 
-             <li className="ts-nav-item">
+            <li className="ts-nav-item">
               <Link to="/" className={`ts-nav-link ${isActive('/')}`}>
                 HOME
               </Link>
@@ -240,14 +248,13 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
 
           {/* Right Action Icons (Search & Cart) */}
           <div className="ts-right-actions d-flex align-items-center gap-3 ms-auto ms-lg-0">
-            {/* Search Input Toggle */}
             <div className="ts-search-wrapper position-relative">
               {showSearchInput ? (
                 <form onSubmit={handleSearchSubmit} className="d-flex align-items-center">
                   <input
                     type="text"
                     className="form-control form-control-sm ts-search-input"
-                    placeholder="Search bells..."
+                    placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     autoFocus
@@ -268,7 +275,6 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
               )}
             </div>
 
-            {/* Quick Cart Link Badge */}
             <Link to="/cart" className="ts-action-icon-btn position-relative" aria-label="Cart">
               <FaShoppingCart />
               {getCartItemsCount && getCartItemsCount() > 0 && (

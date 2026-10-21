@@ -22,7 +22,7 @@ const Footer = () => {
 
         {/* Left Side Link */}
         <div className="ts-footer-single-link">
-          <Link to="/refund-policy" onClick={handleScrollTop}>Terms and Conditions</Link>
+          <Link to="/return-policy" onClick={handleScrollTop}>Return &amp; Exchange Policy</Link>
         </div>
       </div>
 

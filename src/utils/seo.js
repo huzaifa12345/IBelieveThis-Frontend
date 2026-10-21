@@ -1,6 +1,6 @@
 export const SITE_URL = 'https://ibelievethis.us';
 export const SITE_NAME = 'IBelieveThis';
-export const SITE_TAGLINE = 'American Made Decorative Bells & Home Accents';
+export const SITE_TAGLINE = 'Motorcycle Leather Gear, Jackets, Gloves & Biker Boots';
 export const SITE_OG_IMAGE = `${SITE_URL}/IBelieveThis.png`;
 
 /**

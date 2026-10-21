@@ -408,28 +408,49 @@
 
 /* --- DESKTOP CENTERING & MOBILE HIDE FIXES --- */
 
-/* 1. Desktop View (>= 992px): Center Links & Keep Icons Right-Aligned */
+/* Desktop: hamburger left, links centered, search/cart right */
 @media (min-width: 992px) {
   .ts-main-navbar .container {
     position: relative;
     justify-content: center !important;
   }
 
+  .ts-left-actions {
+    position: absolute;
+    left: 12px;
+    z-index: 2;
+  }
+
   .ts-right-actions {
     position: absolute;
     right: 12px;
+    z-index: 2;
   }
 }
 
-/* 2. Mobile View (< 992px): Completely Hide Main Navbar */
+/* Mobile: main navbar hidden — hamburger stays in brand banner */
 @media (max-width: 991px) {
   .ts-main-navbar {
     display: none !important;
   }
+
   .ts-menu-toggle {
-  background: transparent;
-  border: 1px solid var(--brand-gold);
-  color: var(--brand-gold);
-  border-radius: 4px;
-}
+    background: transparent;
+    border: 1px solid var(--brand-gold);
+    color: var(--brand-gold);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  .ts-menu-toggle:hover {
+    color: #fff;
+    background: var(--brand-gold);
+  }
 }

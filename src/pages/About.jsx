@@ -1,107 +1,102 @@
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import { useState } from 'react';
 import SideDrawer from '../components/SideDrawer';
- 
-const About = () => {
+import { SITE_NAME } from '../utils/seo';
+import '../assets/css/InfoPages.css';
 
+const About = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+
   return (
-    <div
-      style={{
-        width: '100%',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'linear-gradient(180deg, #fff7ed 0%, #f8fafc 55%, #eef2f7 100%)'
-      }}
-    >
-      {/* Header */}
-      <header className="modern-header" style={{ width: '100%' }}>
-        <div className="container-fluid px-0">
-          <TopBar onMenuToggle={() => setSideDrawerOpen(true)} />
-          <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
-        </div>
+    <div className="info-page-wrapper">
+      <header className="modern-header">
+        <TopBar onMenuToggle={() => setSideDrawerOpen(true)} />
+        <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
       </header>
 
-      {/* Hero / Intro */}
-      <section className="container-fluid px-3 px-md-4 py-5">
+      <section className="container py-5">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="row align-items-center"
+          transition={{ duration: 0.35 }}
+          className="row g-4 align-items-start"
         >
-          <div className="col-lg-7 mb-4 mb-lg-0">
-            <h1 className="fw-bold mb-3" style={{ color: '#111827' }}>
-              About <span style={{ color: 'var(--brand-primary)' }}>IBelieveThis</span>
+          <div className="col-lg-7">
+            <p className="info-eyebrow">Our Story</p>
+            <h1 className="info-title">
+              About <span>{SITE_NAME}</span>
             </h1>
-            <p className="lead" style={{ color: '#4b5563' }}>
-              IBelieveThis is a trusted supplier of home care chemicals, detergents, and cleaning solutions serving businesses and households with dependable quality and consistent performance.
+            <p className="info-lead">
+              {SITE_NAME} is a motorcycle lifestyle shop built for riders who want gear that looks sharp
+              on the road and holds up for the long haul. From leather jackets and riding gloves to
+              biker boots and everyday rider essentials, we curate pieces that blend classic biker
+              style with real-world durability.
+            </p>
+            <p className="info-body">
+              You can also find us on{' '}
+              <a
+                href="https://www.etsy.com/shop/IBelieveThis"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="info-link"
+              >
+                Etsy
+              </a>
+              — same brand, same focus: premium motorcycle apparel and accessories for men and women
+              who ride with confidence.
             </p>
           </div>
+
           <div className="col-lg-5">
-            <div
-              className="p-4 rounded-4 shadow-sm"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(242,101,34,0.1), rgba(251,191,36,0.15))',
-              }}
-            >
-              <h5 className="fw-bold mb-3" style={{ color: '#111827' }}>
-                At a Glance
-              </h5>
-              <ul className="list-unstyled mb-0" style={{ color: '#374151', fontSize: 14 }}>
-                <li className="mb-2">
-                  • Serving Home Care, commercial, and domestic customers with a dependable range of chemical and detergent solutions.
-                </li>
-                <li className="mb-2">
-                  • Trusted by buyers who value product quality, safety, and timely supply.
-                </li>
-                <li className="mb-2">
-                  • Focused on detergents, cleaning agents, and specialized formulations.
-                </li>
-                <li>
-                  • Based in Pakistan, delivering reliable service through our store and online platform.
-                </li>
+            <div className="info-card">
+              <h2 className="info-card-title">What We Sell</h2>
+              <ul className="info-list">
+                <li>Leather motorcycle jackets &amp; riding outerwear</li>
+                <li>Riding gloves built for grip, comfort, and style</li>
+                <li>Biker boots &amp; lace-up riding footwear</li>
+                <li>Rider-ready apparel and motorcycle lifestyle essentials</li>
               </ul>
             </div>
           </div>
         </motion.div>
       </section>
 
-      {/* Brand Story */}
-      <section className="container-fluid px-3 px-md-4 pb-5">
-        <div className="row">
-          <div className="col-lg-7 mb-4">
-            <h3 className="fw-bold mb-3" style={{ color: '#111827' }}>
-              Our Story
-            </h3>
-            <p style={{ color: '#4b5563', lineHeight: 1.7 }}>
-              IBelieveThis was built to serve customers who need dependable chemical products, trusted sourcing, and consistent supply for commercial and household use.
+      <section className="container pb-5">
+        <div className="row g-4">
+          <div className="col-lg-7">
+            <h2 className="info-section-title">Built for the Ride</h2>
+            <p className="info-body">
+              Every collection is chosen with riders in mind — tough materials, clean finishes, and
+              silhouettes that work whether you are on two wheels or off the bike. We focus on
+              quality you can feel: solid stitching, reliable hardware, and designs that stay true
+              to motorcycle culture.
             </p>
-            <p style={{ color: '#4b5563', lineHeight: 1.7 }}>
-              Today, we are recognized for quality formulations, reliable fulfillment, and a customer-first approach focused on safe, effective solutions for cleaning and home care operations.
+            <p className="info-body">
+              Whether you are upgrading your weekend kit or searching for a statement piece,{' '}
+              {SITE_NAME} is here to help you gear up with confidence.
             </p>
           </div>
-          <div className="col-lg-5 mb-4">
-            <div className="p-4 rounded-4 bg-white shadow-sm h-100">
-              <h4 className="fw-bold mb-3" style={{ color: '#111827' }}>
-                What Makes Us Different?
-              </h4>
-              <ul className="list-unstyled mb-0" style={{ color: '#4b5563', fontSize: 14 }}>
-                <li className="mb-2">
-                  • <strong>Premium quality supply</strong> – dependable chemical products built for real-world use.
-                </li>
-                <li className="mb-2">
-                  • <strong>Expert selection</strong> – carefully curated detergents and cleaning formulations for every need.
-                </li>
-                <li className="mb-2">
-                  • <strong>Competitive pricing</strong> – trusted performance without unnecessary overhead.
+          <div className="col-lg-5">
+            <div className="info-card">
+              <h2 className="info-card-title">Why Riders Choose Us</h2>
+              <ul className="info-list">
+                <li>
+                  <strong>Rider-first selection</strong> — jackets, gloves, boots, and more
                 </li>
                 <li>
-                  • <strong>Personalized service</strong> – we guide buyers toward the right solutions for their operations.
+                  <strong>Style that lasts</strong> — classic biker looks with everyday wearability
+                </li>
+                <li>
+                  <strong>Clear policies</strong> —{' '}
+                  <Link to="/return-policy" className="info-link">
+                    7-day money-back &amp; exchange
+                  </Link>
+                </li>
+                <li>
+                  <strong>Direct support</strong> — shop online with care that feels personal
                 </li>
               </ul>
             </div>
@@ -109,35 +104,30 @@ const About = () => {
         </div>
       </section>
 
-      {/* Vision / Mission */}
-      <section
-        className="py-5"
-        style={{ background: 'linear-gradient(135deg,#0f172a,#020617)', color: '#e5e7eb' }}
-      >
-        <div className="container">
+      <section className="info-band">
+        <div className="container py-5">
           <div className="row g-4">
             <div className="col-md-6">
-              <h3 className="fw-bold mb-3">Our Vision</h3>
-              <p style={{ lineHeight: 1.7 }}>
-                To be the most trusted chemical and detergent supplier in the region, delivering quality, consistency, and dependable service for every customer.
+              <h2 className="info-section-title">Our Vision</h2>
+              <p className="info-body mb-0">
+                To be a go-to destination for motorcycle apparel and gear — where style, toughness,
+                and rider culture meet in every order.
               </p>
             </div>
             <div className="col-md-6">
-              <h3 className="fw-bold mb-3">Our Promise</h3>
-              <p style={{ lineHeight: 1.7 }}>
-                Every order from IBelieveThis is backed by responsible sourcing, reliable delivery, and attentive support.
+              <h2 className="info-section-title">Our Promise</h2>
+              <p className="info-body mb-0">
+                Honest product details, careful packing, and support you can count on — from first
+                click to the moment your gear arrives.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
       <ThemeFooter />
     </div>
   );
 };
 
 export default About;
-
-
