@@ -98,6 +98,24 @@ const ThemeHome = () => {
         };
     }, [settings]);
 
+    // Drop fixed LCP shell only after React hero has painted (shell is outside #root)
+    useEffect(() => {
+        const shell = document.getElementById('lcp-hero-shell');
+        if (!shell) return undefined;
+        if (heroReady) {
+            const drop = () => shell.remove();
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(() => requestAnimationFrame(drop));
+            } else {
+                drop();
+            }
+            return undefined;
+        }
+        // Failsafe: never leave the overlay stuck
+        const t = window.setTimeout(() => shell.remove(), 4000);
+        return () => window.clearTimeout(t);
+    }, [heroReady]);
+
     // Hero settings — do not block first paint if bootstrap image exists
     useEffect(() => {
         let cancelled = false;
@@ -224,7 +242,7 @@ const ThemeHome = () => {
                                 {heroSrc ? (
                                   <img
                                     key={slide.image || currentSlide}
-                                    src={heroSrc}
+                                    src={isFirstPaintSlide ? (heroImage(slide.image, 400) || heroSrc) : heroSrc}
                                     srcSet={heroSet}
                                     sizes="100vw"
                                     alt={slide.title || 'IBelieveThis hero'}
@@ -234,6 +252,10 @@ const ThemeHome = () => {
                                     loading={isFirstPaintSlide ? 'eager' : 'lazy'}
                                     decoding="async"
                                     className="hero-img"
+                                    ref={(el) => {
+                                      if (!isFirstPaintSlide || !el) return;
+                                      if (el.complete) setHeroReady(true);
+                                    }}
                                     onLoad={() => {
                                       if (isFirstPaintSlide) setHeroReady(true);
                                     }}

@@ -89,10 +89,10 @@ export function cardSrcSet(url) {
     .join(', ');
 }
 
-/** Build preload attrs for first hero slide (prerender / head). */
+/** Build preload attrs for first hero slide (prerender / head). Mobile-first href (400w). */
 export function heroPreloadAttrs(url) {
   if (!url) return null;
-  const href = heroImage(url, 800);
+  const href = heroImage(url, 400);
   const imagesrcset = heroSrcSet(url);
   return {
     href,

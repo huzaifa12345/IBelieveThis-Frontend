@@ -79,6 +79,10 @@ function injectHead(html, { title, description, path: pagePath, image, jsonLd, t
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
   let out = html;
+  // Idempotent: strip prior prerender hero tags if build re-ran on dirty dist
+  out = out.replace(/<link\s+rel="preload"\s+as="image"[^>]*>\s*/gi, '');
+  out = out.replace(/<script>\s*window\.__HERO_BOOTSTRAP__\s*=[\s\S]*?<\/script>\s*/gi, '');
+  out = out.replace(/<div id="lcp-hero-shell"[\s\S]*?<\/div>\s*/i, '');
   out = out.replace(/<title>[^<]*<\/title>/i, `<title>${safeTitle}</title>`);
   out = out.replace(
     /<meta name="description" content="[^"]*"\s*\/?>/i,
@@ -156,6 +160,40 @@ ${inner}
   return html.replace('<div id="root"></div>', `<div id="root">${block}</div>`);
 }
 
+/**
+ * LCP hero lives OUTSIDE #root so React.createRoot does not destroy it.
+ * Fixed overlay paints immediately; ThemeHome removes #lcp-hero-shell after first slide onLoad.
+ */
+function injectLcpHeroShell(html, hero) {
+  if (!hero?.image) {
+    return html.replace(/\s*<!-- LCP_HERO_SHELL[^>]*-->\s*/i, '\n    ');
+  }
+  const src = escapeHtml(heroImage(hero.image, 400));
+  const srcset = escapeHtml(heroSrcSet(hero.image) || '');
+  const alt = escapeHtml(hero.title || 'IBelieveThis');
+  const shell = `<div id="lcp-hero-shell" aria-hidden="true">
+<style>
+#lcp-hero-shell{position:fixed;inset:0;z-index:2147483000;margin:0;padding:0;background:#0b0b0b;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#lcp-hero-shell img{width:100%;height:100%;object-fit:cover;display:block}
+</style>
+<img
+  src="${src}"
+  srcset="${srcset}"
+  sizes="100vw"
+  width="1200"
+  height="800"
+  alt="${alt}"
+  fetchpriority="high"
+  loading="eager"
+  decoding="async"
+/>
+</div>`;
+  if (html.includes('<!-- LCP_HERO_SHELL')) {
+    return html.replace(/<!-- LCP_HERO_SHELL[^>]*-->/i, shell);
+  }
+  return html.replace('<div id="root">', `${shell}\n    <div id="root">`);
+}
+
 function faqHtml(faqs) {
   return (faqs || [])
     .map(
@@ -197,11 +235,14 @@ async function main() {
   }
 
   let template = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
-  // Strip legacy hidden SEO stubs (older builds) so crawlable HTML is never cloaked
+  // Strip legacy / prior-prerender stubs so re-runs stay clean
   template = template
     .replace(/<script>document\.addEventListener\('DOMContentLoaded',function\(\)\{var el=document\.getElementById\('seo-prerender'\);[^<]*<\/script>\s*/gi, '')
     .replace(/<div id="seo-prerender"[^>]*>[\s\S]*?<\/div>\s*/gi, '')
-    .replace(/<script type="application\/ld\+json" id="prerender-jsonld"[^>]*>[\s\S]*?<\/script>\s*/gi, '');
+    .replace(/<div id="lcp-hero-shell"[\s\S]*?<\/div>\s*/gi, '')
+    .replace(/<link\s+rel="preload"\s+as="image"[^>]*>\s*/gi, '')
+    .replace(/<script>\s*window\.__HERO_BOOTSTRAP__\s*=[\s\S]*?<\/script>\s*/gi, '')
+    .replace(/<script type="application\/ld\+json" id="prerender-jsonld[^"]*"[^>]*>[\s\S]*?<\/script>\s*/gi, '');
   // Ensure a clean empty #root for injection
   if (!/<div id="root"><\/div>/.test(template)) {
     template = template.replace(/<div id="root">[\s\S]*?<\/div>/i, '<div id="root"></div>');
@@ -446,21 +487,6 @@ ${g.sections.map((s) => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.body)}</p
   }
 
   const heroPreload = heroBootstrap?.image ? heroPreloadAttrs(heroBootstrap.image) : null;
-  const heroLcpImg = heroBootstrap?.image
-    ? `<figure class="lcp-hero">
-<img
-  src="${escapeHtml(heroImage(heroBootstrap.image, 800))}"
-  srcset="${escapeHtml(heroSrcSet(heroBootstrap.image) || '')}"
-  sizes="100vw"
-  width="1200"
-  height="800"
-  alt="${escapeHtml(heroBootstrap.title || 'IBelieveThis hero')}"
-  fetchpriority="high"
-  loading="eager"
-  decoding="async"
-/>
-</figure>`
-    : '';
 
   const homeCatHtml = (categories || [])
     .map((cat) => {
@@ -495,31 +521,33 @@ ${links ? `<ul>${links}</ul>` : `<p><a href="${SITE}/category/${slug}">Shop ${es
   writeRoute(
     '/',
     withSeoBody(
-      injectHead(template, {
-        title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
-        description:
-          'Shop US biker gear — motorcycle guardian bells, biker boots, leather jackets, riding gloves, cowboy hats and patches. Ships from the USA.',
-        path: '/',
-        image: heroPreload?.href || undefined,
-        heroPreload,
-        heroBootstrap,
-        jsonLd: [
-          orgSchema(),
-          {
-            '@context': 'https://schema.org',
-            '@type': 'WebSite',
-            name: 'IBelieveThis',
-            url: SITE,
-            potentialAction: {
-              '@type': 'SearchAction',
-              target: `${SITE}/all-products?search={search_term_string}`,
-              'query-input': 'required name=search_term_string',
+      injectLcpHeroShell(
+        injectHead(template, {
+          title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
+          description:
+            'Shop US biker gear — motorcycle guardian bells, biker boots, leather jackets, riding gloves, cowboy hats and patches. Ships from the USA.',
+          path: '/',
+          image: heroBootstrap?.image ? heroImage(heroBootstrap.image, 1200) : undefined,
+          heroPreload,
+          heroBootstrap,
+          jsonLd: [
+            orgSchema(),
+            {
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'IBelieveThis',
+              url: SITE,
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${SITE}/all-products?search={search_term_string}`,
+                'query-input': 'required name=search_term_string',
+              },
             },
-          },
-        ],
-      }),
-      `${heroLcpImg}
-<h1>Biker Gear &amp; Motorcycle Guardian Bells | IBelieveThis</h1>
+          ],
+        }),
+        heroBootstrap
+      ),
+      `<h1>Biker Gear &amp; Motorcycle Guardian Bells | IBelieveThis</h1>
 <p>IBelieveThis is a US motorcycle lifestyle shop for guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches. Ships from the USA. Secure checkout by Stripe. Also on <a href="${ETSY}">Etsy</a>.</p>
 <p><a href="${SITE}/all-products">Shop all products</a> · <a href="${SITE}/faq">FAQ</a> · <a href="${SITE}/guides">Guides</a> · <a href="${SITE}/size-guide">Size Guide</a> · <a href="${SITE}/contact">Contact</a></p>
 ${homeCatHtml || '<section><h2>Shop</h2><p><a href="' + SITE + '/all-products">Browse the full catalog</a></p></section>'}

@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 
-// Remove build-time SEO stub if any older deploy left it visible above the app
+// SEO body inside #root is replaced by React; keep #lcp-hero-shell (outside #root) until ThemeHome drops it
 document.getElementById('seo-prerender')?.remove()
 
 createRoot(document.getElementById('root')).render(
