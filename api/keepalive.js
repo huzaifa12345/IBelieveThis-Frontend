@@ -1,6 +1,7 @@
 /**
- * Vercel Cron → ping backend /api/health every 10 minutes (keeps Render warm).
- * Requires Vercel Pro/Hobby cron + env API_ORIGIN.
+ * Manual/Pro cron → ping backend /api/health (keeps Render warm).
+ * Cron entry is commented out in vercel.json (Hobby plan).
+ * Env: API_ORIGIN
  */
 export default async function handler(req, res) {
   const apiOrigin = (process.env.API_ORIGIN || process.env.VITE_API_URL || '')
