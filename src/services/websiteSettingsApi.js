@@ -5,7 +5,11 @@ const websiteSettingsApi = {
   // Get all website settings
   getWebsiteSettings: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/website-settings`);
+      // no-store: admin contact/logo edits must not stick behind HTTP max-age cache
+      const response = await fetch(`${API_BASE_URL}/website-settings`, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+      });
       const data = await response.json();
       return data;
     } catch (error) {

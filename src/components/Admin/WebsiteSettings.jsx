@@ -3,6 +3,7 @@ import { Upload, Image as ImageIcon, Save, RefreshCw, Settings, ShieldCheck, Glo
 import websiteSettingsApi from '../../services/websiteSettingsApi';
 import toast from 'react-hot-toast';
 import { useLogo } from '../../context/LogoContext';
+import { invalidateStoreSettingsCache } from '../../hooks/useStoreSettings';
 
 const WebsiteSettings = () => {
   const { updateLogo } = useLogo();
@@ -97,6 +98,8 @@ const WebsiteSettings = () => {
       console.log('Update response:', response);
 
       if (response.success) {
+        invalidateStoreSettingsCache();
+
         // Handle logo update separately with error catching
         if (String(settingId).includes('logo')) {
           try {

@@ -2,11 +2,15 @@ import { useEffect, useState } from 'react';
 import websiteSettingsApi from '../services/websiteSettingsApi';
 
 let cache = null;
+let cacheAt = 0;
 let inflight = null;
+const TTL_MS = 30 * 1000; // 30s — contact/email edits show quickly on storefront
 
-async function loadSettings() {
-  if (cache) return cache;
-  if (inflight) return inflight;
+async function loadSettings(force = false) {
+  const now = Date.now();
+  if (!force && cache && now - cacheAt < TTL_MS) return cache;
+  if (!force && inflight) return inflight;
+
   inflight = (async () => {
     const response = await websiteSettingsApi.getWebsiteSettings();
     const grouped = response?.data || response || {};
@@ -19,6 +23,7 @@ async function loadSettings() {
       }
     });
     cache = flat;
+    cacheAt = Date.now();
     return flat;
   })().finally(() => {
     inflight = null;
@@ -50,4 +55,5 @@ export function useStoreSettings() {
 
 export function invalidateStoreSettingsCache() {
   cache = null;
+  cacheAt = 0;
 }
