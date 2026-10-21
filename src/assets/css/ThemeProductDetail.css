@@ -788,6 +788,13 @@
   margin-top: 4px;
 }
 
+/* Normal desktop: 3 related cards only; mobile + large (1600+) keep 4 */
+@media (min-width: 992px) and (max-width: 1599px) {
+  .related-products-grid .item-card:nth-child(n + 4) {
+    display: none;
+  }
+}
+
 .pdp-trust-row {
   display: flex;
   flex-wrap: wrap;
