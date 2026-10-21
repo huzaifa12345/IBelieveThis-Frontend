@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaSearch, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
@@ -7,6 +7,9 @@ import SideDrawer from '../components/SideDrawer';
 import ThemeFooter from '../components/ThemeFooter';
 import TopBar from '../components/TopBar';
 import FilterBar from '../components/FilterBar';
+import FaqSection from '../components/FaqSection';
+import { categoryIntro } from '../content/categoryIntros';
+import { faqsForCategory } from '../content/faqs';
 import { productPath, setPageSeo, injectJsonLd, removeJsonLd, absoluteUrl, SITE_NAME } from '../utils/seo';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import './DynamicCategory.css';
@@ -31,15 +34,20 @@ const DynamicCategory = () => {
   const [priceMax, setPriceMax] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
+  const intro = useMemo(() => (category ? categoryIntro(category) : ''), [category]);
+  const categoryFaqs = useMemo(() => (category ? faqsForCategory(category) : []), [category]);
+
   useEffect(() => {
     if (!category) return;
     const path = `/category/${categorySlug}`;
+    const desc = intro.slice(0, 160);
     setPageSeo({
       title: category.name,
       description:
-        category.description ||
+        desc ||
         `Shop ${category.name} at ${SITE_NAME} — motorcycle guardian bells, biker boots, jackets, gloves and rider gear.`,
       path,
+      image: category.image_url,
     });
     injectJsonLd('seo-breadcrumb-jsonld', {
       '@context': 'https://schema.org',
@@ -51,7 +59,7 @@ const DynamicCategory = () => {
       ],
     });
     return () => removeJsonLd('seo-breadcrumb-jsonld');
-  }, [category, categorySlug]);
+  }, [category, categorySlug, intro]);
 
   useEffect(() => {
     const fetchCategoryData = async () => {
@@ -158,6 +166,41 @@ const DynamicCategory = () => {
       />
 
       <div className="container py-5">
+        {category && (
+          <header className="mb-4">
+            <nav className="mb-2" aria-label="Breadcrumb" style={{ fontSize: '0.9rem', opacity: 0.85 }}>
+              <Link to="/" className="text-decoration-none" style={{ color: 'var(--brand-primary)' }}>
+                Home
+              </Link>
+              {' › '}
+              <Link to="/all-products" className="text-decoration-none" style={{ color: 'var(--brand-primary)' }}>
+                Shop
+              </Link>
+              {' › '}
+              <span className="text-white">{category.name}</span>
+            </nav>
+            <h1 className="text-white fw-bold mb-3" style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)' }}>
+              {category.name}
+            </h1>
+            <p className="text-white-50 mb-0" style={{ maxWidth: '52rem', lineHeight: 1.65, color: '#cbd5e1' }}>
+              {intro}
+            </p>
+            <p className="mt-2 mb-0">
+              <Link to="/size-guide" style={{ color: 'var(--brand-primary)' }}>
+                Size Guide
+              </Link>
+              {' · '}
+              <Link to="/shipping-policy" style={{ color: 'var(--brand-primary)' }}>
+                Shipping Policy
+              </Link>
+              {' · '}
+              <Link to="/faq" style={{ color: 'var(--brand-primary)' }}>
+                FAQ
+              </Link>
+            </p>
+          </header>
+        )}
+
         {productsLoading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-primary" role="status"></div>
@@ -293,6 +336,10 @@ const DynamicCategory = () => {
           </div>
         )}
       </div>
+
+      {categoryFaqs.length > 0 && (
+        <FaqSection faqs={categoryFaqs} title={`FAQ about ${category?.name || 'this category'}`} />
+      )}
 
       <ThemeFooter />
     </div>

@@ -29,6 +29,9 @@ const Contact = () => {
   const hours = get('business_hours', 'Mon–Fri, 9am–5pm US Eastern');
   const reply = get('reply_time', 'We typically reply within 1–2 business days.');
   const returnDays = get('return_window_days', '7');
+  const serviceArea = get('service_area', 'United States');
+  const etsyUrl = get('social_etsy', 'https://www.etsy.com/shop/IBelieveThis');
+  const etsyHistory = get('etsy_selling_history', '');
 
   useEffect(() => {
     setPageSeo({
@@ -143,12 +146,29 @@ const Contact = () => {
                 )}
                 {phone ? <p className="info-body mb-2">Phone: {phone}</p> : null}
                 {address ? <p className="info-body mb-2">Address: {address}</p> : null}
+                <p className="info-body mb-2">
+                  <strong>Service area:</strong> {serviceArea || 'United States'}
+                </p>
                 <p className="info-body mb-2">Hours: {hours}</p>
-                <p className="info-body mb-0">{reply}</p>
+                <p className="info-body mb-2">
+                  <strong>Response time:</strong> {reply}
+                </p>
+                <p className="info-body mb-0">
+                  <strong>Etsy:</strong>{' '}
+                  <a href={etsyUrl} target="_blank" rel="noopener noreferrer" className="info-link">
+                    {etsyUrl.replace(/^https?:\/\//, '')}
+                  </a>
+                  {etsyHistory ? ` — ${etsyHistory}` : null}
+                </p>
               </div>
               <div className="info-card">
                 <h2 className="info-card-title">Quick links</h2>
                 <ul className="info-list">
+                  <li>
+                    <Link to="/faq" className="info-link">
+                      FAQ
+                    </Link>
+                  </li>
                   <li>
                     <Link to="/return-policy" className="info-link">
                       {returnDays}-day return &amp; exchange

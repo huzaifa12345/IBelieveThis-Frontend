@@ -1,15 +1,16 @@
 /**
- * Build-time prerender for Approach A (Vite SPA).
- * Fetches catalog from the API and writes HTML shells with unique
- * title / meta / canonical / JSON-LD + visible SEO content outside hydration risk.
+ * Build-time prerender (Approach A): full VISIBLE crawlable HTML inside #root.
+ * React replaces #root on hydrate; bots without JS keep the full content.
  *
- * Env:
- *   PRERENDER_API_ORIGIN  e.g. https://ibelievethis-backend.onrender.com
- *   SITE_URL              default https://www.ibelievethis.us
+ * Env: PRERENDER_API_ORIGIN, SITE_URL
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { SITE_FAQS, faqsForCategory, toFaqPageSchema } from '../src/content/faqs.js';
+import { categoryIntro } from '../src/content/categoryIntros.js';
+import { GUIDES } from '../src/content/guides.js';
+import { SIZE_GUIDE } from '../src/content/sizeGuide.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../dist');
@@ -17,6 +18,7 @@ const SITE = (process.env.SITE_URL || 'https://www.ibelievethis.us').replace(/\/
 const API_ORIGIN = (process.env.PRERENDER_API_ORIGIN || process.env.VITE_API_URL || '')
   .replace(/\/api\/?$/, '')
   .replace(/\/$/, '');
+const ETSY = 'https://www.etsy.com/shop/IBelieveThis';
 
 const slugify = (value) =>
   String(value || '')
@@ -39,6 +41,13 @@ const escapeHtml = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+const stripText = (s, max = 5000) =>
+  String(s || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, max);
+
 async function fetchJson(url) {
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -58,60 +67,43 @@ async function fetchAllProducts(apiBase) {
   return products;
 }
 
-function injectHead(html, { title, description, path, image, jsonLd, type = 'website' }) {
-  const url = `${SITE}${path}`;
+function injectHead(html, { title, description, path: pagePath, image, jsonLd, type = 'website' }) {
+  const url = `${SITE}${pagePath}`;
   const img = image || `${SITE}/og-image.jpg`;
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
-
   let out = html;
   out = out.replace(/<title>[^<]*<\/title>/i, `<title>${safeTitle}</title>`);
   out = out.replace(
     /<meta name="description" content="[^"]*"\s*\/?>/i,
     `<meta name="description" content="${safeDesc}" />`
   );
-  out = out.replace(
-    /<link rel="canonical" href="[^"]*"\s*\/?>/i,
-    `<link rel="canonical" href="${url}" />`
-  );
-  out = out.replace(
-    /<meta property="og:url" content="[^"]*"\s*\/?>/i,
-    `<meta property="og:url" content="${url}" />`
-  );
-  out = out.replace(
-    /<meta property="og:title" content="[^"]*"\s*\/?>/i,
-    `<meta property="og:title" content="${safeTitle}" />`
-  );
+  out = out.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${url}" />`);
+  out = out.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${url}" />`);
+  out = out.replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${safeTitle}" />`);
   out = out.replace(
     /<meta property="og:description" content="[^"]*"\s*\/?>/i,
     `<meta property="og:description" content="${safeDesc}" />`
   );
-  out = out.replace(
-    /<meta property="og:image" content="[^"]*"\s*\/?>/i,
-    `<meta property="og:image" content="${escapeHtml(img)}" />`
-  );
-  out = out.replace(
-    /<meta property="og:type" content="[^"]*"\s*\/?>/i,
-    `<meta property="og:type" content="${type}" />`
-  );
-  out = out.replace(
-    /<meta name="twitter:title" content="[^"]*"\s*\/?>/i,
-    `<meta name="twitter:title" content="${safeTitle}" />`
-  );
+  out = out.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${escapeHtml(img)}" />`);
+  out = out.replace(/<meta property="og:type" content="[^"]*"\s*\/?>/i, `<meta property="og:type" content="${type}" />`);
+  out = out.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${safeTitle}" />`);
   out = out.replace(
     /<meta name="twitter:description" content="[^"]*"\s*\/?>/i,
     `<meta name="twitter:description" content="${safeDesc}" />`
   );
-  out = out.replace(
-    /<meta name="twitter:image" content="[^"]*"\s*\/?>/i,
-    `<meta name="twitter:image" content="${escapeHtml(img)}" />`
-  );
+  out = out.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${escapeHtml(img)}" />`);
 
-  if (jsonLd) {
-    const ld = `<script type="application/ld+json" id="prerender-jsonld">${JSON.stringify(jsonLd)}</script>`;
+  const blocks = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
+  if (blocks.length) {
+    const ld = blocks
+      .map(
+        (b, i) =>
+          `<script type="application/ld+json" id="prerender-jsonld-${i}">${JSON.stringify(b)}</script>`
+      )
+      .join('\n  ');
     out = out.replace('</head>', `  ${ld}\n  </head>`);
   }
-
   return out;
 }
 
@@ -124,13 +116,47 @@ function writeRoute(relPath, html) {
   console.log('  ✓', clean ? `/${clean}/` : '/');
 }
 
+/** Visible crawlable HTML inside #root (not hidden). React replaces on hydrate. */
 function withSeoBody(html, inner) {
-  // Keep product/name text in HTML for crawlers/curl — never visible in the UI
-  const block = `
-  <div id="seo-prerender" hidden aria-hidden="true" style="display:none!important;position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0">
-    ${inner}
-  </div>`;
-  return html.replace('<div id="root"></div>', `${block}\n    <div id="root"></div>`);
+  const block = `<div class="seo-ssg" id="seo-prerender">
+<nav aria-label="Breadcrumb"><a href="${SITE}/">Home</a></nav>
+${inner}
+</div>`;
+  return html.replace('<div id="root"></div>', `<div id="root">${block}</div>`);
+}
+
+function faqHtml(faqs) {
+  return (faqs || [])
+    .map(
+      (f) =>
+        `<section class="seo-faq"><h2>${escapeHtml(f.q)}</h2><p>${escapeHtml(f.a)}</p></section>`
+    )
+    .join('\n');
+}
+
+function orgSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'IBelieveThis',
+    url: SITE,
+    logo: `${SITE}/IBelieveThis.png`,
+    description: 'US motorcycle biker gear — guardian bells, boots, jackets, gloves, hats and patches.',
+    sameAs: [ETSY],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      url: `${SITE}/contact`,
+      areaServed: 'US',
+      availableLanguage: 'English',
+    },
+  };
+}
+
+function priceValidUntil() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
 }
 
 async function main() {
@@ -139,11 +165,19 @@ async function main() {
     process.exit(1);
   }
 
-  const template = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
+  let template = fs.readFileSync(path.join(distDir, 'index.html'), 'utf8');
+  // Strip legacy hidden SEO stubs (older builds) so crawlable HTML is never cloaked
+  template = template
+    .replace(/<script>document\.addEventListener\('DOMContentLoaded',function\(\)\{var el=document\.getElementById\('seo-prerender'\);[^<]*<\/script>\s*/gi, '')
+    .replace(/<div id="seo-prerender"[^>]*>[\s\S]*?<\/div>\s*/gi, '')
+    .replace(/<script type="application\/ld\+json" id="prerender-jsonld"[^>]*>[\s\S]*?<\/script>\s*/gi, '');
+  // Ensure a clean empty #root for injection
+  if (!/<div id="root"><\/div>/.test(template)) {
+    template = template.replace(/<div id="root">[\s\S]*?<\/div>/i, '<div id="root"></div>');
+  }
   console.log(`Prerender → ${SITE}`);
   console.log(`API → ${API_ORIGIN || '(none — static pages only)'}`);
 
-  // Shell routes (SPA hydrate)
   const shells = [
     { path: '/cart', title: `Cart | IBelieveThis`, desc: 'Your IBelieveThis shopping cart.' },
     { path: '/checkout', title: `Checkout | IBelieveThis`, desc: 'Secure checkout at IBelieveThis.' },
@@ -152,40 +186,23 @@ async function main() {
     { path: '/admin', title: `Admin | IBelieveThis`, desc: 'Store admin.' },
     { path: '/change-password', title: `Change Password | IBelieveThis`, desc: 'Update your password.' },
   ];
-
   for (const s of shells) {
-    writeRoute(
-      s.path,
-      injectHead(template, {
-        title: s.title,
-        description: s.desc,
-        path: s.path,
-        image: `${SITE}/og-image.jpg`,
-      })
-    );
+    writeRoute(s.path, injectHead(template, { title: s.title, description: s.desc, path: s.path }));
   }
 
-  // Static marketing pages
-  const aboutHtml = withSeoBody(
-    injectHead(template, {
-      title: 'About IBelieveThis | Motorcycle Biker Gear',
-      description:
-        'IBelieveThis is a US biker gear shop for motorcycle guardian bells, boots, jackets, gloves, hats and patches.',
-      path: '/about',
-    }),
-    `<h1>About IBelieveThis</h1><p>US motorcycle &amp; biker gear — guardian bells, boots, jackets, gloves and more.</p>`
-  );
-  writeRoute('/about', aboutHtml);
-
   writeRoute(
-    '/return-policy',
+    '/about',
     withSeoBody(
       injectHead(template, {
-        title: 'Return & Exchange Policy | IBelieveThis',
-        description: '7-day money-back guarantee and exchanges at IBelieveThis.',
-        path: '/return-policy',
+        title: 'About IBelieveThis | Motorcycle Biker Gear',
+        description:
+          'IBelieveThis is a US biker gear shop for motorcycle guardian bells, boots, jackets, gloves, hats and patches. Also on Etsy.',
+        path: '/about',
+        jsonLd: orgSchema(),
       }),
-      `<h1>Return &amp; Exchange Policy</h1><p>7-day money-back guarantee and exchanges on eligible orders.</p>`
+      `<h1>About IBelieveThis</h1>
+<p>IBelieveThis is a motorcycle lifestyle shop for US riders — guardian bells, boots, jackets, gloves, hats and patches. We also sell on <a href="${ETSY}">Etsy</a>. Ships from the USA. Support details are on our <a href="${SITE}/contact">Contact</a> page.</p>
+<p><a href="${SITE}/faq">FAQ</a> · <a href="${SITE}/guides">Guides</a> · <a href="${SITE}/shipping-policy">Shipping Policy</a> · <a href="${SITE}/return-policy">Returns</a></p>`
     )
   );
 
@@ -194,48 +211,145 @@ async function main() {
     withSeoBody(
       injectHead(template, {
         title: 'Contact | IBelieveThis',
-        description: 'Contact IBelieveThis for motorcycle gear orders and support.',
+        description: 'Contact IBelieveThis for motorcycle gear orders, sizing help, and support.',
         path: '/contact',
       }),
-      `<h1>Contact IBelieveThis</h1><p>Questions about gear, shipping, or returns? Reach out anytime.</p>`
+      `<h1>Contact IBelieveThis</h1>
+<p>Questions about sizing, shipping, returns, or an order? Use the contact form on this page or email the support address shown in store settings. We serve customers in the United States. Typical reply time is listed on the live Contact page.</p>
+<p><a href="${SITE}/shipping-policy">Shipping Policy</a> · <a href="${SITE}/return-policy">Return Policy</a> · <a href="${SITE}/faq">FAQ</a> · <a href="${ETSY}">Etsy shop</a></p>`
     )
   );
 
+  for (const [p, title, desc, h1, body] of [
+    [
+      '/return-policy',
+      'Return & Exchange Policy | IBelieveThis',
+      'Return and exchange rules for IBelieveThis motorcycle gear orders.',
+      'Return & Exchange Policy',
+      'Eligible returns and exchanges follow the rules on this page. Start a request via <a href="' +
+        SITE +
+        '/contact">Contact</a>.',
+    ],
+    [
+      '/privacy-policy',
+      'Privacy Policy | IBelieveThis',
+      'How IBelieveThis handles customer data, cookies, and Stripe payments.',
+      'Privacy Policy',
+      'We do not sell personal data. Payments are processed by Stripe. Contact us for privacy requests.',
+    ],
+    [
+      '/terms-of-service',
+      'Terms of Service | IBelieveThis',
+      'Terms of Service for shopping at IBelieveThis.',
+      'Terms of Service',
+      'By using this site you agree to these terms. Questions? <a href="' + SITE + '/contact">Contact</a>.',
+    ],
+    [
+      '/shipping-policy',
+      'Shipping Policy | IBelieveThis',
+      'Shipping, processing times, carriers and tracking for IBelieveThis.',
+      'Shipping Policy',
+      'Orders ship from the USA. Processing windows, carriers, and tracking are described on this page. Rates appear at checkout.',
+    ],
+  ]) {
+    writeRoute(
+      p,
+      withSeoBody(
+        injectHead(template, { title, description: desc, path: p }),
+        `<h1>${h1}</h1><p>${body}</p>`
+      )
+    );
+  }
+
+  // FAQ
   writeRoute(
-    '/privacy-policy',
+    '/faq',
     withSeoBody(
       injectHead(template, {
-        title: 'Privacy Policy | IBelieveThis',
-        description: 'Privacy Policy for IBelieveThis — data, cookies, and Stripe payments.',
-        path: '/privacy-policy',
+        title: 'FAQ | IBelieveThis Motorcycle Gear',
+        description:
+          'Answers about guardian bells, sizing, shipping, returns, care, and contacting IBelieveThis.',
+        path: '/faq',
+        jsonLd: [orgSchema(), toFaqPageSchema(SITE_FAQS)],
       }),
-      `<h1>Privacy Policy</h1><p>How IBelieveThis handles customer data, cookies, and payments.</p>`
+      `<h1>Frequently Asked Questions</h1>
+<p>Short answers for US riders shopping guardian bells, boots, jackets, gloves, and more. Shipping and return amounts are not listed here — see the linked policy pages.</p>
+${faqHtml(SITE_FAQS)}
+<p><a href="${SITE}/shipping-policy">Shipping Policy</a> · <a href="${SITE}/return-policy">Returns</a> · <a href="${SITE}/contact">Contact</a> · <a href="${SITE}/size-guide">Size Guide</a></p>`
     )
   );
 
+  // Size guide
   writeRoute(
-    '/terms-of-service',
+    '/size-guide',
     withSeoBody(
       injectHead(template, {
-        title: 'Terms of Service | IBelieveThis',
-        description: 'Terms of Service for shopping at IBelieveThis.',
-        path: '/terms-of-service',
+        title: 'Size Guide | Boots, Jackets, Gloves & Hats | IBelieveThis',
+        description: SIZE_GUIDE.description,
+        path: '/size-guide',
       }),
-      `<h1>Terms of Service</h1><p>Terms for using the IBelieveThis storefront.</p>`
+      `<h1>${escapeHtml(SIZE_GUIDE.title)}</h1>
+<p>${escapeHtml(SIZE_GUIDE.description)}</p>
+${SIZE_GUIDE.sections
+  .map((s) => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.body)}</p>`)
+  .join('\n')}
+<p><a href="${SITE}/faq">FAQ</a> · <a href="${SITE}/contact">Contact</a></p>`
     )
   );
 
+  // Guides index + articles
   writeRoute(
-    '/shipping-policy',
+    '/guides',
     withSeoBody(
       injectHead(template, {
-        title: 'Shipping Policy | IBelieveThis',
-        description: 'Shipping, processing times, carriers and tracking for IBelieveThis.',
-        path: '/shipping-policy',
+        title: 'Motorcycle Gear Guides | IBelieveThis',
+        description: 'Guides on guardian bells, hanging tips, and choosing biker boots from IBelieveThis.',
+        path: '/guides',
       }),
-      `<h1>Shipping Policy</h1><p>Processing times, carriers, tracking, and lost or damaged packages.</p>`
+      `<h1>Motorcycle Gear Guides</h1>
+<p>Practical articles for US riders — guardian bell tradition, hanging tips, and boot fit basics.</p>
+<ul>
+${GUIDES.map((g) => `<li><a href="${SITE}/guides/${g.slug}">${escapeHtml(g.title)}</a> — ${escapeHtml(g.description)}</li>`).join('\n')}
+</ul>`
     )
   );
+
+  for (const g of GUIDES) {
+    const articleLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: g.title,
+      description: g.description,
+      datePublished: g.datePublished,
+      dateModified: g.dateModified,
+      author: { '@type': 'Organization', name: 'IBelieveThis' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'IBelieveThis',
+        logo: { '@type': 'ImageObject', url: `${SITE}/IBelieveThis.png` },
+      },
+      mainEntityOfPage: `${SITE}/guides/${g.slug}`,
+    };
+    writeRoute(
+      `/guides/${g.slug}`,
+      withSeoBody(
+        injectHead(template, {
+          title: `${g.title} | IBelieveThis`,
+          description: g.description,
+          path: `/guides/${g.slug}`,
+          type: 'article',
+          jsonLd: [articleLd, orgSchema()],
+        }),
+        `<article>
+<h1>${escapeHtml(g.title)}</h1>
+<p>${escapeHtml(g.description)}</p>
+<p>By IBelieveThis · Updated ${escapeHtml(g.dateModified)}</p>
+${g.sections.map((s) => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.body)}</p>`).join('\n')}
+<ul>${g.relatedLinks.map((l) => `<li><a href="${SITE}${l.href}">${escapeHtml(l.label)}</a></li>`).join('')}</ul>
+</article>`
+      )
+    );
+  }
 
   writeRoute(
     '/all-products',
@@ -246,11 +360,11 @@ async function main() {
           'Browse motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches.',
         path: '/all-products',
       }),
-      `<h1>Shop All Products</h1><p>Motorcycle guardian bells, biker boots, jackets, gloves, hats and patches.</p>`
+      `<h1>Shop All Products</h1>
+<p>Full IBelieveThis catalog — motorcycle guardian bells, biker boots, jackets, gloves, hats and patches. Ships from the USA.</p>`
     )
   );
 
-  // 404 page (also copied as 404.html for Vercel)
   const notFound = injectHead(template, {
     title: 'Page Not Found | IBelieveThis',
     description: 'This page does not exist on IBelieveThis.',
@@ -261,84 +375,187 @@ async function main() {
   );
   const notFoundBody = withSeoBody(
     notFound,
-    `<h1>404 — Page not found</h1><p>This URL is not a product or page in our store.</p>`
+    `<h1>404 — Page not found</h1><p><a href="${SITE}/">Return home</a></p>`
   );
   writeRoute('/404', notFoundBody);
   fs.writeFileSync(path.join(distDir, '404.html'), notFoundBody, 'utf8');
 
-  // Home
-  const homeLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      name: 'IBelieveThis',
-      url: SITE,
-      logo: `${SITE}/IBelieveThis.png`,
-      description: 'US motorcycle biker gear and guardian bells.',
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      name: 'IBelieveThis',
-      url: SITE,
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${SITE}/all-products?search={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
-    },
-  ];
+  // Home (enriched after API if available)
+  let products = [];
+  let categories = [];
+  if (API_ORIGIN) {
+    try {
+      [products, categories] = await Promise.all([
+        fetchAllProducts(API_ORIGIN),
+        fetchJson(`${API_ORIGIN}/api/categories`),
+      ]);
+      if (!Array.isArray(categories)) categories = categories?.categories || [];
+      console.log(`Products: ${products.length}, Categories: ${categories.length}`);
+    } catch (e) {
+      console.warn('API fetch failed for catalog prerender:', e.message);
+    }
+  }
+
+  const homeCatHtml = (categories || [])
+    .map((cat) => {
+      const slug = categorySlug(cat);
+      const catProducts = products.filter((p) => p.category_id === cat.id).slice(0, 8);
+      const links = catProducts
+        .map(
+          (p) =>
+            `<li><a href="${SITE}/product/${productSlug(p)}">${escapeHtml(p.name)}</a></li>`
+        )
+        .join('');
+      return `<section>
+<h2><a href="${SITE}/category/${slug}">${escapeHtml(cat.name)}</a></h2>
+<p>${escapeHtml(stripText(categoryIntro(cat), 280))}</p>
+${links ? `<ul>${links}</ul>` : `<p><a href="${SITE}/category/${slug}">Shop ${escapeHtml(cat.name)}</a></p>`}
+</section>`;
+    })
+    .join('\n');
+
+  const featured = products.slice(0, 12);
+  const featuredHtml = featured.length
+    ? `<section><h2>Featured products</h2><ul>${featured
+        .map(
+          (p) =>
+            `<li><a href="${SITE}/product/${productSlug(p)}">${escapeHtml(p.name)}</a> — $${escapeHtml(
+              String(p.discount_price || p.price)
+            )}</li>`
+        )
+        .join('')}</ul></section>`
+    : '';
+
   writeRoute(
     '/',
     withSeoBody(
       injectHead(template, {
-        title: 'IBelieveThis | Motorcycle Guardian Bells, Biker Boots, Jackets & Riding Gear',
+        title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
         description:
-          'Shop US biker gear — motorcycle guardian bells, biker boots, leather jackets, riding gloves, cowboy hats and patches.',
+          'Shop US biker gear — motorcycle guardian bells, biker boots, leather jackets, riding gloves, cowboy hats and patches. Ships from the USA.',
         path: '/',
-        jsonLd: homeLd,
+        jsonLd: [
+          orgSchema(),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'IBelieveThis',
+            url: SITE,
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: `${SITE}/all-products?search={search_term_string}`,
+              'query-input': 'required name=search_term_string',
+            },
+          },
+        ],
       }),
-      `<h1>IBelieveThis</h1><p>Motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches.</p>`
+      `<h1>Biker Gear &amp; Motorcycle Guardian Bells | IBelieveThis</h1>
+<p>IBelieveThis is a US motorcycle lifestyle shop for guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches. Ships from the USA. Secure checkout by Stripe. Also on <a href="${ETSY}">Etsy</a>.</p>
+<p><a href="${SITE}/all-products">Shop all products</a> · <a href="${SITE}/faq">FAQ</a> · <a href="${SITE}/guides">Guides</a> · <a href="${SITE}/size-guide">Size Guide</a> · <a href="${SITE}/contact">Contact</a></p>
+${homeCatHtml || '<section><h2>Shop</h2><p><a href="' + SITE + '/all-products">Browse the full catalog</a></p></section>'}
+${featuredHtml}`
     )
   );
 
-  if (!API_ORIGIN) {
-    console.warn('Skipping product/category prerender — set PRERENDER_API_ORIGIN');
-    return;
+  // Always write llms.txt (enrich with categories when known)
+  {
+    const catLines = (categories || [])
+      .map((c) => `- ${c.name}: ${SITE}/category/${categorySlug(c)}`)
+      .join('\n');
+    const llms = `# IBelieveThis
+
+> US motorcycle & biker gear shop — guardian bells, boots, jackets, gloves, hats, and patches. Ships from the USA. Secure checkout by Stripe.
+
+Site: ${SITE}
+Etsy: ${ETSY}
+
+## Brand summary
+
+IBelieveThis is an online motorcycle lifestyle store for riders in the United States. We sell motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats, and patches. Product pages include descriptions, photos, pricing, availability, and sizes when applicable. Shipping, returns, and support details are published on dedicated policy pages (amounts and rates are calculated at checkout and are not listed here).
+
+## Shop categories
+
+- All products: ${SITE}/all-products
+${catLines || `- Browse categories from the home page: ${SITE}/`}
+
+## Key pages
+
+- Home: ${SITE}/
+- About: ${SITE}/about
+- Contact: ${SITE}/contact
+- FAQ: ${SITE}/faq
+- Size Guide: ${SITE}/size-guide
+- Guides: ${SITE}/guides
+- Shipping Policy: ${SITE}/shipping-policy
+- Return & Exchange Policy: ${SITE}/return-policy
+- Privacy Policy: ${SITE}/privacy-policy
+- Terms of Service: ${SITE}/terms-of-service
+
+## Guides
+
+- What Is a Motorcycle Guardian Bell?: ${SITE}/guides/what-is-a-motorcycle-guardian-bell
+- How to Hang a Guardian Bell: ${SITE}/guides/how-to-hang-a-guardian-bell
+- How to Choose Biker Boots: ${SITE}/guides/how-to-choose-biker-boots
+
+## Optional
+
+- Sitemap: ${SITE}/sitemap.xml
+`;
+    fs.writeFileSync(path.join(distDir, 'llms.txt'), llms, 'utf8');
+    console.log('  ✓ /llms.txt');
   }
 
-  const apiBase = API_ORIGIN;
-  const [products, categories] = await Promise.all([
-    fetchAllProducts(apiBase),
-    fetchJson(`${apiBase}/api/categories`),
-  ]);
-
-  console.log(`Products: ${products.length}, Categories: ${categories.length}`);
+  if (!API_ORIGIN || !products.length) {
+    console.warn('Skipping product/category deep prerender — set PRERENDER_API_ORIGIN');
+    console.log('Prerender complete (static + home shell).');
+    return;
+  }
 
   for (const cat of categories) {
     const slug = categorySlug(cat);
     const pathName = `/category/${slug}`;
+    const intro = categoryIntro(cat);
+    const catProducts = products.filter((p) => p.category_id === cat.id);
+    const faqs = faqsForCategory(cat);
+    const productLinks = catProducts
+      .map(
+        (p) =>
+          `<li><a href="${SITE}/product/${productSlug(p)}">${escapeHtml(p.name)}</a>${
+            p.discount_price || p.price
+              ? ` — $${escapeHtml(String(p.discount_price || p.price))}`
+              : ''
+          }</li>`
+      )
+      .join('');
+
     const breadcrumb = {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
-        { '@type': 'ListItem', position: 2, name: cat.name, item: `${SITE}${pathName}` },
+        { '@type': 'ListItem', position: 2, name: 'Shop', item: `${SITE}/all-products` },
+        { '@type': 'ListItem', position: 3, name: cat.name, item: `${SITE}${pathName}` },
       ],
     };
+
     writeRoute(
       pathName,
       withSeoBody(
         injectHead(template, {
           title: `${cat.name} | IBelieveThis`,
-          description:
-            cat.description ||
-            `Shop ${cat.name} at IBelieveThis — motorcycle and biker gear.`,
+          description: stripText(intro, 160),
           path: pathName,
           image: cat.image_url || `${SITE}/og-image.jpg`,
-          jsonLd: breadcrumb,
+          jsonLd: [breadcrumb, toFaqPageSchema(faqs), orgSchema()],
         }),
-        `<h1>${escapeHtml(cat.name)}</h1><p>${escapeHtml(cat.description || `Shop ${cat.name} motorcycle gear.`)}</p>`
+        `<h1>${escapeHtml(cat.name)}</h1>
+<p>${escapeHtml(intro)}</p>
+<nav><a href="${SITE}/">Home</a> › <a href="${SITE}/all-products">Shop</a> › ${escapeHtml(cat.name)}</nav>
+<h2>Products in ${escapeHtml(cat.name)}</h2>
+<ul>${productLinks || '<li>No products listed yet.</li>'}</ul>
+<h2>FAQ about ${escapeHtml(cat.name)}</h2>
+${faqHtml(faqs)}
+<p><a href="${SITE}/size-guide">Size Guide</a> · <a href="${SITE}/shipping-policy">Shipping</a> · <a href="${SITE}/contact">Contact</a></p>`
       )
     );
   }
@@ -347,42 +564,85 @@ async function main() {
     const slug = productSlug(p);
     const pathName = `/product/${slug}`;
     const price = String(p.discount_price || p.price);
-    const img = (Array.isArray(p.images) && p.images[0]) || p.image_url || `${SITE}/og-image.jpg`;
+    const images = [
+      ...(Array.isArray(p.images) ? p.images.filter(Boolean) : []),
+      p.image_url,
+    ].filter(Boolean);
+    const uniqueImgs = [...new Set(images)];
+    const img = uniqueImgs[0] || `${SITE}/og-image.jpg`;
+    const fullDesc = stripText(p.description || `${p.name} from IBelieveThis.`, 8000);
+    const metaDesc = fullDesc.slice(0, 160);
     const inStock = Number(p.stock_quantity) > 0;
-    const desc = String(p.description || `${p.name} from IBelieveThis.`)
-      .replace(/<[^>]+>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 160);
+    const catName = p.category_relation?.name || p.category || 'Motorcycle Gear';
+    const catSlug = p.category_relation
+      ? categorySlug(p.category_relation)
+      : p.category
+        ? slugify(p.category)
+        : null;
+    const sizes = Array.isArray(p.sizes) ? p.sizes : [];
+    const sizeLabels = sizes
+      .map((s) => (typeof s === 'string' ? s : s?.size))
+      .filter(Boolean);
+
+    const imgHtml = uniqueImgs
+      .map(
+        (src, i) =>
+          `<img src="${escapeHtml(src)}" alt="${escapeHtml(p.name)}${
+            i ? ` — photo ${i + 1}` : ' product photo'
+          }" width="800" height="800" loading="lazy" />`
+      )
+      .join('\n');
+
+    const sizesHtml = sizeLabels.length
+      ? `<h2>Available sizes</h2><ul>${sizeLabels
+          .map((s) => `<li>${escapeHtml(s)}</li>`)
+          .join('')}</ul><p><a href="${SITE}/size-guide">Size Guide</a></p>`
+      : '';
 
     const productLd = {
       '@context': 'https://schema.org/',
       '@type': 'Product',
       name: p.name,
-      image: Array.isArray(p.images) && p.images.length ? p.images : [img],
-      description: desc,
+      image: uniqueImgs.length ? uniqueImgs : [img],
+      description: fullDesc.slice(0, 5000),
       sku: p.sku || `SKU-${p.id}`,
       brand: { '@type': 'Brand', name: 'IBelieveThis' },
+      category: catName,
       offers: {
         '@type': 'Offer',
         url: `${SITE}${pathName}`,
         priceCurrency: 'USD',
         price,
-        availability: inStock
-          ? 'https://schema.org/InStock'
-          : 'https://schema.org/OutOfStock',
-        shippingDetails: {
-          '@type': 'OfferShippingDetails',
-          shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'USD' },
-          shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'US' },
-        },
-        hasMerchantReturnPolicy: {
-          '@type': 'MerchantReturnPolicy',
-          applicableCountry: 'US',
-          returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-          merchantReturnDays: 7,
-        },
+        priceValidUntil: priceValidUntil(),
+        availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+        seller: { '@type': 'Organization', name: 'IBelieveThis' },
       },
+    };
+
+    if (p.averageRating && p.reviewCount > 0) {
+      productLd.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: String(p.averageRating),
+        reviewCount: String(p.reviewCount),
+        bestRating: '5',
+        worstRating: '1',
+      };
+    }
+
+    const breadcrumb = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE}/` },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: catName,
+          item: catSlug ? `${SITE}/category/${catSlug}` : `${SITE}/all-products`,
+        },
+        { '@type': 'ListItem', position: 3, name: p.name, item: `${SITE}${pathName}` },
+      ],
     };
 
     writeRoute(
@@ -390,13 +650,28 @@ async function main() {
       withSeoBody(
         injectHead(template, {
           title: `${p.name} | IBelieveThis`,
-          description: desc,
+          description: metaDesc,
           path: pathName,
           image: img,
           type: 'product',
-          jsonLd: productLd,
+          jsonLd: [productLd, breadcrumb, orgSchema()],
         }),
-        `<article><h1>${escapeHtml(p.name)}</h1><p class="price">$${escapeHtml(price)} USD</p><p>${escapeHtml(desc)}</p><img src="${escapeHtml(img)}" alt="${escapeHtml(p.name)}" width="800" height="800" /></article>`
+        `<article>
+<nav><a href="${SITE}/">Home</a> › ${
+          catSlug
+            ? `<a href="${SITE}/category/${catSlug}">${escapeHtml(catName)}</a>`
+            : escapeHtml(catName)
+        } › ${escapeHtml(p.name)}</nav>
+<h1>${escapeHtml(p.name)}</h1>
+<p class="price"><strong>$${escapeHtml(price)} USD</strong> · ${
+          inStock ? 'In stock' : 'Out of stock'
+        }</p>
+${p.sku ? `<p>SKU: ${escapeHtml(p.sku)}</p>` : ''}
+<div class="description"><p>${escapeHtml(fullDesc).replace(/\n/g, '</p><p>')}</p></div>
+${sizesHtml}
+<figure>${imgHtml}</figure>
+<p><a href="${SITE}/shipping-policy">Shipping &amp; Returns info</a> · <a href="${SITE}/contact">Contact</a> · <a href="${SITE}/faq">FAQ</a></p>
+</article>`
       )
     );
   }

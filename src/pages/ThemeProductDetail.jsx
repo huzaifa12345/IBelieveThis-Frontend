@@ -373,6 +373,8 @@ import {
   SITE_NAME,
   buildProductOfferExtras,
 } from '../utils/seo';
+import { faqsForCategory } from '../content/faqs';
+import FaqSection from '../components/FaqSection';
 import { galleryImage, cloudinarySrcSet, cardImage } from '../utils/cloudinary';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import '../assets/css/ThemeProductDetail.css';
@@ -516,14 +518,21 @@ const ThemeProductDetail = () => {
     const inStock = Number.isFinite(stockQty) ? stockQty > 0 : true;
     const categoryName =
       product.category_relation?.name || product.category || 'Motorcycle Gear';
+    const catRel = product.category_relation || (product.category ? { name: product.category } : null);
+    const catHref = catRel ? categoryPath(catRel) : '/all-products';
     const skuValue = product.sku || product.barcode || `SKU-${product.id}`;
-    const offerExtras = buildProductOfferExtras();
+    const offerExtras = buildProductOfferExtras(returnDays);
+    const allImages = [
+      ...(Array.isArray(product.images) ? product.images.filter(Boolean) : []),
+      product.image_url,
+    ].filter(Boolean);
+    const uniqueImages = [...new Set(allImages)];
 
     const productSchema = {
       '@context': 'https://schema.org/',
       '@type': 'Product',
       name: product.name,
-      image: product.images?.length ? product.images : [product.image_url].filter(Boolean),
+      image: uniqueImages.length ? uniqueImages : [absoluteUrl('/og-image.jpg')],
       description,
       sku: skuValue,
       mpn: skuValue,
@@ -545,36 +554,38 @@ const ThemeProductDetail = () => {
       },
     };
 
-    // AEO: FAQ block helps answer engines summarize product intent
+    // Only emit AggregateRating / Review when real DB reviews exist — never fake
+    if (reviews.length > 0 && reviewAvg > 0) {
+      productSchema.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: String(Number(reviewAvg.toFixed(1))),
+        reviewCount: String(reviews.length),
+        bestRating: '5',
+        worstRating: '1',
+      };
+      productSchema.review = reviews.slice(0, 10).map((r) => ({
+        '@type': 'Review',
+        author: { '@type': 'Person', name: r.name || r.user_name || 'Customer' },
+        datePublished: r.created_at ? String(r.created_at).slice(0, 10) : undefined,
+        reviewBody: r.comment || r.review || undefined,
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: String(r.rating),
+          bestRating: '5',
+          worstRating: '1',
+        },
+      }));
+    }
+
+    const catFaqs = faqsForCategory(catRel || { name: categoryName });
     const faqSchema = {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: `What is ${product.name}?`,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: description || `${product.name} is sold by ${SITE_NAME}.`,
-          },
-        },
-        {
-          '@type': 'Question',
-          name: `How much does ${product.name} cost?`,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: `${product.name} is priced at $${Number(product.discount_price || product.price).toFixed(2)} USD at ${SITE_NAME}.`,
-          },
-        },
-        {
-          '@type': 'Question',
-          name: `Where can I buy ${product.name}?`,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: `You can buy ${product.name} online at ${absoluteUrl(path)}.`,
-          },
-        },
-      ],
+      mainEntity: catFaqs.slice(0, 5).map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
     };
 
     const breadcrumbSchema = {
@@ -582,7 +593,7 @@ const ThemeProductDetail = () => {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') },
-        { '@type': 'ListItem', position: 2, name: 'Shop', item: absoluteUrl('/all-products') },
+        { '@type': 'ListItem', position: 2, name: categoryName, item: absoluteUrl(catHref) },
         { '@type': 'ListItem', position: 3, name: product.name, item: absoluteUrl(path) },
       ],
     };
@@ -596,7 +607,7 @@ const ThemeProductDetail = () => {
       removeJsonLd('seo-faq-jsonld');
       removeJsonLd('seo-breadcrumb-jsonld');
     };
-  }, [product]);
+  }, [product, reviews, reviewAvg, returnDays]);
 
   const productSizes = Array.isArray(product?.sizes) ? product.sizes : [];
   const requiresSize = productSizes.length > 0;
@@ -835,7 +846,10 @@ const ThemeProductDetail = () => {
               {requiresSize && (
                 <div className="size-selector-wrap mb-4">
                   <label className="form-label fw-bold text-white mb-2 d-block">
-                    Size <span className="text-danger">*</span>
+                    Size <span className="text-danger">*</span>{' '}
+                    <Link to="/size-guide" className="fw-normal ms-2" style={{ color: 'var(--brand-primary)', fontSize: '0.9rem' }}>
+                      Size Guide
+                    </Link>
                   </label>
                   <select
                     className="form-select size-select-etsy"
@@ -1143,6 +1157,15 @@ const ThemeProductDetail = () => {
           </section>
         )}
       </div>
+      {product && (
+        <FaqSection
+          faqs={faqsForCategory(
+            product.category_relation || { name: product.category || 'Motorcycle Gear' }
+          )}
+          title="Product FAQ"
+          withSchema={false}
+        />
+      )}
       <ThemeFooter />
     </div>
   );

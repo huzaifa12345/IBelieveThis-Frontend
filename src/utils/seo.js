@@ -115,9 +115,63 @@ export function removeJsonLd(id) {
   document.getElementById(id)?.remove();
 }
 
-/** Product Offer JSON-LD extras required by merchant listings */
-export function buildProductOfferExtras() {
+export function priceValidUntil(yearsAhead = 1) {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + yearsAhead);
+  return d.toISOString().slice(0, 10);
+}
+
+const ETSY_DEFAULT = 'https://www.etsy.com/shop/IBelieveThis';
+
+/**
+ * Organization JSON-LD from store settings (social / contact).
+ * @param {Record<string, string>} settings map from useStoreSettings / API
+ */
+export function buildOrganizationSchema(settings = {}) {
+  const get = (k, fallback = '') => {
+    const v = settings[k] ?? settings.get?.(k, fallback);
+    return (typeof v === 'string' ? v : fallback || '').trim();
+  };
+
+  const sameAs = [
+    get('social_etsy', ETSY_DEFAULT) || ETSY_DEFAULT,
+    get('social_facebook'),
+    get('social_instagram'),
+    get('social_pinterest'),
+  ].filter(Boolean);
+
+  const email = get('contact_email');
+  const phone = get('contact_phone');
+  const serviceArea = get('service_area', 'United States') || 'United States';
+
+  const contactPoint = {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    url: absoluteUrl('/contact'),
+    areaServed: serviceArea,
+    availableLanguage: 'English',
+  };
+  if (email) contactPoint.email = email;
+  if (phone) contactPoint.telephone = phone;
+
   return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/IBelieveThis.png`,
+    description: SITE_TAGLINE,
+    sameAs,
+    contactPoint,
+    areaServed: { '@type': 'Country', name: 'United States' },
+  };
+}
+
+/** Product Offer JSON-LD extras required by merchant listings */
+export function buildProductOfferExtras(returnDays = 7) {
+  const days = Number(returnDays) || 7;
+  return {
+    priceValidUntil: priceValidUntil(1),
     shippingDetails: {
       '@type': 'OfferShippingDetails',
       shippingRate: {
@@ -149,7 +203,7 @@ export function buildProductOfferExtras() {
       '@type': 'MerchantReturnPolicy',
       applicableCountry: 'US',
       returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
-      merchantReturnDays: 7,
+      merchantReturnDays: days,
       returnMethod: 'https://schema.org/ReturnByMail',
       returnFees: 'https://schema.org/FreeReturn',
       refundType: 'https://schema.org/FullRefund',

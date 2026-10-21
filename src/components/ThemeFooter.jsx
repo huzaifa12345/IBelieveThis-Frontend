@@ -43,6 +43,9 @@ const Footer = () => {
         <nav className="ts-footer-links" aria-label="Footer">
           <Link to="/about" onClick={handleScrollTop}>About</Link>
           <Link to="/contact" onClick={handleScrollTop}>Contact</Link>
+          <Link to="/faq" onClick={handleScrollTop}>FAQ</Link>
+          <Link to="/size-guide" onClick={handleScrollTop}>Size Guide</Link>
+          <Link to="/guides" onClick={handleScrollTop}>Guides</Link>
           <Link to="/shipping-policy" onClick={handleScrollTop}>Shipping Policy</Link>
           <Link to="/return-policy" onClick={handleScrollTop}>Return &amp; Exchange</Link>
           <Link to="/privacy-policy" onClick={handleScrollTop}>Privacy Policy</Link>

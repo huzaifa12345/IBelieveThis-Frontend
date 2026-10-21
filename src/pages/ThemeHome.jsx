@@ -11,15 +11,17 @@ import toast from 'react-hot-toast';
 import SideDrawer from '../components/SideDrawer';
 import TopBar from '../components/TopBar'; 
 import ThemeFooter from '../components/ThemeFooter';
-import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE } from '../utils/seo';
+import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE, buildOrganizationSchema } from '../utils/seo';
 import { cardImage, cloudinarySrcSet, galleryImage } from '../utils/cloudinary';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
+import { useStoreSettings } from '../hooks/useStoreSettings';
 
 import '../assets/css/ThemeHome.css';
 
 const ThemeHome = () => {
     const navigate = useNavigate();
     const { handleAddToCart } = useCardAddToCart();
+    const { settings } = useStoreSettings();
     const [categories, setCategories] = useState([]);
     const [productsByCategory, setProductsByCategory] = useState({});
     const [loading, setLoading] = useState(true);
@@ -30,30 +32,19 @@ const ThemeHome = () => {
         {
             image:
                 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+Cjwvc3ZnPg==',
-            title: 'Ride Ready Gear',
-            description: 'Motorcycle guardian bells, biker boots, jackets and riding gloves.',
+            title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
+            description: 'Motorcycle guardian bells, biker boots, jackets and riding gloves. Ships from the USA.',
         },
     ]);
 
     useEffect(() => {
         setPageSeo({
-            title: `${SITE_NAME} | ${SITE_TAGLINE}`,
+            title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
             description: SITE_TAGLINE,
             path: '/',
         });
 
-        injectJsonLd('seo-org-jsonld', {
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: SITE_NAME,
-            url: SITE_URL,
-            logo: `${SITE_URL}/IBelieveThis.png`,
-            description: SITE_TAGLINE,
-            areaServed: {
-                '@type': 'Country',
-                name: 'United States',
-            },
-        });
+        injectJsonLd('seo-org-jsonld', buildOrganizationSchema(settings));
 
         injectJsonLd('seo-website-jsonld', {
             '@context': 'https://schema.org',
@@ -72,7 +63,7 @@ const ThemeHome = () => {
             removeJsonLd('seo-org-jsonld');
             removeJsonLd('seo-website-jsonld');
         };
-    }, []);
+    }, [settings]);
 
     // Fetch hero slides from website settings
     useEffect(() => {
@@ -286,7 +277,11 @@ const ThemeHome = () => {
                     <div key={category.id} className="category-group">
                         <div className="group-header">
                             <div>
-                                <h2 className="group-title">{category.name}</h2>
+                                <h2 className="group-title">
+                                  <Link to={categoryPath(category)} className="text-decoration-none" style={{ color: 'inherit' }}>
+                                    {category.name}
+                                  </Link>
+                                </h2>
                                 <div className="title-line"></div>
                             </div>
                             <Link to={categoryPath(category)} className="view-link">Explore All</Link>

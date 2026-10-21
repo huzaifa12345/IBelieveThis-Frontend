@@ -1,0 +1,38 @@
+# IBelieveThis
+
+> US motorcycle & biker gear shop — guardian bells, boots, jackets, gloves, hats, and patches. Ships from the USA. Secure checkout by Stripe.
+
+Site: https://www.ibelievethis.us
+Etsy: https://www.etsy.com/shop/IBelieveThis
+
+## Brand summary
+
+IBelieveThis is an online motorcycle lifestyle store for riders in the United States. We sell motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats, and patches. Product pages include descriptions, photos, pricing, availability, and sizes when applicable. Shipping, returns, and support details are published on dedicated policy pages (amounts and rates are calculated at checkout and are not listed here).
+
+## Shop categories
+
+- All products: https://www.ibelievethis.us/all-products
+- Category pages: https://www.ibelievethis.us/category/{slug} (listed on the home page Shop sections)
+
+## Key pages
+
+- Home: https://www.ibelievethis.us/
+- About: https://www.ibelievethis.us/about
+- Contact: https://www.ibelievethis.us/contact
+- FAQ: https://www.ibelievethis.us/faq
+- Size Guide: https://www.ibelievethis.us/size-guide
+- Guides: https://www.ibelievethis.us/guides
+- Shipping Policy: https://www.ibelievethis.us/shipping-policy
+- Return & Exchange Policy: https://www.ibelievethis.us/return-policy
+- Privacy Policy: https://www.ibelievethis.us/privacy-policy
+- Terms of Service: https://www.ibelievethis.us/terms-of-service
+
+## Guides
+
+- What Is a Motorcycle Guardian Bell?: https://www.ibelievethis.us/guides/what-is-a-motorcycle-guardian-bell
+- How to Hang a Guardian Bell: https://www.ibelievethis.us/guides/how-to-hang-a-guardian-bell
+- How to Choose Biker Boots: https://www.ibelievethis.us/guides/how-to-choose-biker-boots
+
+## Optional
+
+- Sitemap: https://www.ibelievethis.us/sitemap.xml

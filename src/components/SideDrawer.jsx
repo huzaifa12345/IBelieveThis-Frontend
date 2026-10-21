@@ -80,6 +80,15 @@ const SideDrawer = ({ isOpen, onClose }) => {
                 <Link to="/contact" className="drawer-link" onClick={onClose}>
                   <Info className="nav-icon" size={18} /> Contact
                 </Link>
+                <Link to="/faq" className="drawer-link" onClick={onClose}>
+                  <Info className="nav-icon" size={18} /> FAQ
+                </Link>
+                <Link to="/size-guide" className="drawer-link" onClick={onClose}>
+                  <Info className="nav-icon" size={18} /> Size Guide
+                </Link>
+                <Link to="/guides" className="drawer-link" onClick={onClose}>
+                  <Info className="nav-icon" size={18} /> Guides
+                </Link>
                 <Link to="/cart" className="drawer-link" onClick={onClose}>
                   <ShoppingCart className="nav-icon" size={18} /> Cart
                 </Link>

@@ -17,6 +17,10 @@ const About = lazy(() => import('./pages/About'));
 const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
 const Contact = lazy(() => import('./pages/Contact'));
 const PolicyPage = lazy(() => import('./pages/PolicyPage'));
+const Faq = lazy(() => import('./pages/Faq'));
+const SizeGuide = lazy(() => import('./pages/SizeGuide'));
+const GuidesIndex = lazy(() => import('./pages/Guides').then((m) => ({ default: m.GuidesIndex })));
+const GuideArticle = lazy(() => import('./pages/Guides').then((m) => ({ default: m.GuideArticle })));
 const DynamicCategory = lazy(() => import('./pages/DynamicCategory'));
 const ThemeProductDetail = lazy(() => import('./pages/ThemeProductDetail'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -54,6 +58,10 @@ function App() {
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path="/faq" element={<Faq />} />
+                        <Route path="/size-guide" element={<SizeGuide />} />
+                        <Route path="/guides" element={<GuidesIndex />} />
+                        <Route path="/guides/:slug" element={<GuideArticle />} />
                         <Route path="/return-policy" element={<ReturnPolicy />} />
                         <Route path="/refund-policy" element={<ReturnPolicy />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

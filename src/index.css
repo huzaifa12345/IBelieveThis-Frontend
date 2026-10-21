@@ -40,13 +40,34 @@ body {
   min-height: 100vh;
 }
 
-/* Never show build-time SEO stub above the TopBar */
-#seo-prerender {
-  display: none !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  overflow: hidden !important;
-  pointer-events: none !important;
+/*
+ * Build-time SEO HTML lives inside #root as #seo-prerender (VISIBLE in source for crawlers).
+ * React removes it on hydrate (see main.jsx). Do not hide with display:none — that defeats SEO.
+ */
+.seo-ssg {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  color: #e2e8f0;
+  line-height: 1.55;
+}
+.seo-ssg a {
+  color: var(--brand-primary, #5b9bd5);
+}
+.seo-ssg h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin: 0.75rem 0 1rem;
+  color: #f8fafc;
+}
+.seo-ssg h2 {
+  font-size: 1.2rem;
+  margin: 1.25rem 0 0.5rem;
+  color: #f1f5f9;
+}
+.seo-ssg img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.5rem 0.5rem 0.5rem 0;
 }
 
 .App {

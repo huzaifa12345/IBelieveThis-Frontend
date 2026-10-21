@@ -15,6 +15,10 @@ const About = () => {
   const phone = get('contact_phone', '');
   const address = get('contact_address', '');
   const returnDays = get('return_window_days', '7');
+  const reply = get('reply_time', '');
+  const serviceArea = get('service_area', 'United States');
+  const etsyUrl = get('social_etsy', 'https://www.etsy.com/shop/IBelieveThis');
+  const etsyHistory = get('etsy_selling_history', '');
 
   useEffect(() => {
     setPageSeo({
@@ -51,17 +55,45 @@ const About = () => {
             </p>
             <p className="info-body">
               You can also find us on{' '}
-              <a
-                href="https://www.etsy.com/shop/IBelieveThis"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="info-link"
-              >
+              <a href={etsyUrl} target="_blank" rel="noopener noreferrer" className="info-link">
                 Etsy
               </a>
               — same brand, same focus: premium motorcycle apparel and accessories for men and women
               who ride with confidence.
+              {etsyHistory ? (
+                <>
+                  {' '}
+                  {etsyHistory}
+                </>
+              ) : null}
             </p>
+            <div className="info-card mt-3">
+              <h2 className="info-card-title">Trust &amp; service</h2>
+              <ul className="info-list mb-0">
+                <li>
+                  <strong>Service area:</strong> {serviceArea || 'United States'}
+                </li>
+                {email ? (
+                  <li>
+                    <strong>Email:</strong>{' '}
+                    <a className="info-link" href={`mailto:${email}`}>
+                      {email}
+                    </a>
+                  </li>
+                ) : null}
+                {reply ? (
+                  <li>
+                    <strong>Response time:</strong> {reply}
+                  </li>
+                ) : null}
+                <li>
+                  <strong>Etsy shop:</strong>{' '}
+                  <a href={etsyUrl} target="_blank" rel="noopener noreferrer" className="info-link">
+                    {etsyUrl.replace(/^https?:\/\//, '')}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div className="col-lg-5">
