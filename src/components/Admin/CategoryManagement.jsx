@@ -70,7 +70,7 @@ const CategoryManagement = ({ categories, onCategoriesChange }) => {
         <div>
           <h4 className="fw-bold mb-0 text-dark">Product Categories</h4>
           <span className="badge bg-soft-primary text-primary" style={{ backgroundColor: '#e1f5fe', color: '#039be5' }}>
-            Chemical Categories
+            Store Categories
           </span>
         </div>
         <button 
@@ -88,7 +88,7 @@ const CategoryManagement = ({ categories, onCategoriesChange }) => {
           <div className="p-3 bg-white rounded-circle shadow-sm"><Tags className="text-warning" /></div>
           <div>
             <h6 className="mb-1 fw-bold">Simple Categories</h6>
-            <p className="small text-muted mb-0">Create categories like: Detergents, Chemicals, Cleaning Solutions, etc.</p>
+            <p className="small text-muted mb-0">Create categories like: Guardian Bells, Boots, Jackets, Gloves, Patches.</p>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@ const CategoryManagement = ({ categories, onCategoriesChange }) => {
                 <label className="form-label small fw-bold text-muted text-uppercase">Category Details</label>
                 <input 
                   className="form-control mb-3 shadow-sm" 
-                  placeholder="e.g. Detergents, Chemicals, Cleaning Solutions" 
+                  placeholder="e.g. Guardian Bells, Boots, Jackets" 
                   value={categoryForm.name} 
                   onChange={e => setCategoryForm({...categoryForm, name: e.target.value})} 
                 />
