@@ -80,7 +80,7 @@ const ProductModal = ({
                             type="text"
                             className="form-control border-0 bg-light p-2 shadow-none"
                             style={{ borderRadius: '8px' }}
-                            placeholder="e.g. Detergents, Cleaners, Chemicals ..."
+                            placeholder="e.g. Guardian Bells, Boots, Jackets..."
                             value={productForm.name}
                             onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                           />
@@ -251,9 +251,9 @@ const ProductModal = ({
                       <div className="d-flex gap-2">
                         <AlertCircle size={18} className="text-warning flex-shrink-0" />
                         <div>
-                          <p className="small fw-bold text-dark mb-1">Batch Registration Note:</p>
+                          <p className="small fw-bold text-dark mb-1">Listing tip:</p>
                           <p className="text-muted mb-0" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
-                            Chemical product listings should include concentration or pack size in the title (e.g. <strong>"Cleaner 5 Litre"</strong>). 
+                            Include key details in the title (size, material, or style) so shoppers can find products easily.
                           </p>
                         </div>
                       </div>
@@ -266,13 +266,13 @@ const ProductModal = ({
                 <div className="col-12 mt-0">
                   <div className="card border-0 shadow-sm p-3" style={{ borderRadius: '16px' }}>
                     <label className="form-label small fw-bold text-muted mb-2 d-flex align-items-center gap-2">
-                      <Layers size={14} className="text-primary" /> Technical Description & Formulation Notes
+                      <Layers size={14} className="text-primary" /> Product Description
                     </label>
                     <textarea
                       className="form-control border-0 bg-light shadow-none"
                       style={{ borderRadius: '8px' }}
-                      rows="2"
-                      placeholder="Add chemical details, handling warnings, or storage requirements..."
+                      rows="4"
+                      placeholder="Describe materials, fit, features. Use a new line for each bullet starting with - "
                       value={productForm.description}
                       onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                     ></textarea>
@@ -298,7 +298,7 @@ const ProductModal = ({
                   onClick={handleSaveProduct}
                 >
                   <Save size={18} />
-                  {editingProduct ? 'Update Formulation' : 'Finalize Registration'}
+                  {editingProduct ? 'Update Product' : 'Save Product'}
                 </button>
               </div>
             </div>

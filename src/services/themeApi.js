@@ -130,6 +130,11 @@ export const themeApi = {
     return response.data;
   },
 
+  adminCreateReview: async (reviewData) => {
+    const response = await api.post('/reviews/admin', reviewData);
+    return response.data;
+  },
+
   searchProducts: async (query) => {
     const response = await api.get('/products/search', { params: { q: query } });
     return response.data;

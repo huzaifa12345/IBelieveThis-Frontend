@@ -15,13 +15,15 @@ import ShippingSettings from '../components/Admin/ShippingSettings';
 import OrdersReport from '../components/Admin/OrdersReport';
 import FailedEmails from '../components/Admin/FailedEmails';
 import SizeManagement from '../components/Admin/SizeManagement';
+import ReviewManagement from '../components/Admin/ReviewManagement';
+import ContactMessages from '../components/Admin/ContactMessages';
 import { isSuperAdmin } from '../utils/roles';
 
 import { 
   LayoutDashboard, Package, Tags, Truck, 
   Settings, Menu, LogOut, Store, 
   Activity, Search, Trophy, ClipboardList, ShieldCheck,
-  BarChart3, Mail, Ruler
+  BarChart3, Mail, Ruler, Star, MessageSquare
 } from 'lucide-react';
 
 const Admin = () => {
@@ -61,6 +63,8 @@ const Admin = () => {
     { id: 'orders-report', name: 'Orders Report', icon: BarChart3 },
     { id: 'shipping-settings', name: 'Shipping & Tax', icon: ClipboardList },
     { id: 'failed-emails', name: 'Failed Emails', icon: Mail },
+    { id: 'reviews', name: 'Reviews', icon: Star },
+    { id: 'contact-messages', name: 'Contact Inbox', icon: MessageSquare },
     ...(superAdmin ? [{ id: 'payment-audits', name: 'Payment Audit', icon: ShieldCheck }] : []),
     { id: 'website-settings', name: 'Settings', icon: Settings },
   ];
@@ -164,6 +168,10 @@ const Admin = () => {
 
   const handleImageUpload = async (files) => {
     if (!files || files.length === 0) return;
+    if (files.length > 10) {
+      toast.error('Maximum 10 images per upload');
+      return;
+    }
     setUploadingImages(true);
     try {
       const result = await themeApi.uploadImages(Array.from(files));
@@ -195,10 +203,10 @@ const Admin = () => {
       };
       if (editingProduct) {
         await themeApi.updateProduct(editingProduct.id, productData);
-        toast.success('Formulation Updated');
+        toast.success('Product updated');
       } else {
         await themeApi.createProduct(productData);
-        toast.success('New Formulation Registered');
+        toast.success('Product created');
       }
       setShowProductForm(false);
       setUploadedImages([]);
@@ -365,6 +373,8 @@ const Admin = () => {
                 {activeTab === 'orders-report' && <OrdersReport />}
                 {activeTab === 'shipping-settings' && <ShippingSettings />}
                 {activeTab === 'failed-emails' && <FailedEmails />}
+                {activeTab === 'reviews' && <ReviewManagement products={products} />}
+                {activeTab === 'contact-messages' && <ContactMessages />}
                 {activeTab === 'payment-audits' && superAdmin && <PaymentAudits />}
                 {activeTab === 'website-settings' && <WebsiteSettings />}
               </div>

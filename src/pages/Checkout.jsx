@@ -471,7 +471,7 @@ const Checkout = () => {
           <div className="ch-industrial-card py-5">
             <ShoppingBag className="w-20 h-20 mx-auto text-muted mb-4 opacity-20" size={60} />
             <h1 className="ch-industrial-title">Your Cart is Empty</h1>
-            <p className="text-muted mb-4">Add essential chemical and cleaning products to your cart before checkout.</p>
+            <p className="text-muted mb-4">Add products to your cart before checkout.</p>
             <Link to="/all-products" className="ch-btn-gold">Continue Shopping</Link>
           </div>
         </div>

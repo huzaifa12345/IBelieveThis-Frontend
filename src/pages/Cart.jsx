@@ -43,7 +43,7 @@ const Cart = () => {
               <ShoppingBag size={80} />
             </div>
             <h1 className="navy-title mt-4">Your Cart is Empty</h1>
-            <p className="text-muted mb-5">Explore trusted home care chemical supplies and packaging essentials.</p>
+            <p className="text-muted mb-5">Browse motorcycle gear and add your favorites when you are ready.</p>
             <Link to="/all-products" className="industrial-btn-primary px-5">
                RETURN TO SHOP
             </Link>
