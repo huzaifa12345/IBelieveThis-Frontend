@@ -1,0 +1,62 @@
+/* Admin product modal — SizeManager readable on light cards
+   (storefront body/table text is light and otherwise unreadable here). */
+
+.size-manager {
+  color: #1f2937 !important;
+}
+
+.size-manager .form-label,
+.size-manager label {
+  color: #0f172a !important;
+}
+
+.size-manager .text-muted {
+  color: #64748b !important;
+}
+
+.size-manager .form-select,
+.size-manager .form-control {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.size-manager .form-select option {
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.size-manager .table {
+  --bs-table-color: #1f2937;
+  --bs-table-bg: #ffffff;
+  --bs-table-striped-color: #1f2937;
+  color: #1f2937 !important;
+  background: #ffffff !important;
+}
+
+.size-manager .table > thead th,
+.size-manager .table-light th {
+  color: #0f172a !important;
+  background: #f1f5f9 !important;
+  font-weight: 700;
+  border-color: #e2e8f0 !important;
+}
+
+.size-manager .table td {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  vertical-align: middle;
+}
+
+.size-manager .table td.fw-semibold {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.size-manager .table .form-control,
+.size-manager .table .form-control-sm {
+  color: #0f172a !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}

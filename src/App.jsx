@@ -5,6 +5,7 @@ import { lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { LogoProvider } from './context/LogoContext';
+import { CardAddToCartProvider } from './context/CardAddToCartContext';
 
 import './assets/css/bootstrap.min.css';
 import './assets/css/style.css';
@@ -39,50 +40,52 @@ function App() {
       <CartProvider>
         <LogoProvider>
           <Router>
-            <div className="App">
-              <main>
-                <AnimatePresence mode="wait">
-                  <Suspense fallback={<RouteFallback />}>
-                    <Routes>
-                      <Route path="/" element={<ThemeHome />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/change-password" element={<ChangePassword />} />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/return-policy" element={<ReturnPolicy />} />
-                      <Route path="/refund-policy" element={<ReturnPolicy />} />
-                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                      <Route path="/terms-of-service" element={<TermsOfService />} />
-                      <Route path="/shipping-policy" element={<ShippingPolicy />} />
-                      <Route path="/admin" element={<Admin />} />
-                      <Route path="/all-products" element={<AllProducts />} />
-                      <Route path="/product/:slug" element={<ThemeProductDetail />} />
-                      <Route path="/category/:categorySlug" element={<DynamicCategory />} />
-                      <Route path="/404" element={<NotFound />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </AnimatePresence>
-              </main>
-            </div>
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                style: { background: '#363636', color: '#fff' },
-                success: {
-                  duration: 3000,
-                  iconTheme: { primary: '#22c55e', secondary: '#fff' },
-                },
-                error: {
-                  duration: 5000,
-                  iconTheme: { primary: '#ff4b4b', secondary: '#fff' },
-                },
-              }}
-            />
+            <CardAddToCartProvider>
+              <div className="App">
+                <main>
+                  <AnimatePresence mode="wait">
+                    <Suspense fallback={<RouteFallback />}>
+                      <Routes>
+                        <Route path="/" element={<ThemeHome />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/checkout" element={<Checkout />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/return-policy" element={<ReturnPolicy />} />
+                        <Route path="/refund-policy" element={<ReturnPolicy />} />
+                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                        <Route path="/terms-of-service" element={<TermsOfService />} />
+                        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                        <Route path="/admin" element={<Admin />} />
+                        <Route path="/all-products" element={<AllProducts />} />
+                        <Route path="/product/:slug" element={<ThemeProductDetail />} />
+                        <Route path="/category/:categorySlug" element={<DynamicCategory />} />
+                        <Route path="/404" element={<NotFound />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </AnimatePresence>
+                </main>
+              </div>
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  style: { background: '#363636', color: '#fff' },
+                  success: {
+                    duration: 3000,
+                    iconTheme: { primary: '#22c55e', secondary: '#fff' },
+                  },
+                  error: {
+                    duration: 5000,
+                    iconTheme: { primary: '#ff4b4b', secondary: '#fff' },
+                  },
+                }}
+              />
+            </CardAddToCartProvider>
           </Router>
         </LogoProvider>
       </CartProvider>

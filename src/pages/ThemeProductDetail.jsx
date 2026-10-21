@@ -374,7 +374,7 @@ import {
   buildProductOfferExtras,
 } from '../utils/seo';
 import { galleryImage, cloudinarySrcSet, cardImage } from '../utils/cloudinary';
-import { addProductFromCard } from '../utils/cartHelpers';
+import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import '../assets/css/ThemeProductDetail.css';
 import '../assets/css/ThemeHome.css';
 
@@ -382,6 +382,7 @@ const ThemeProductDetail = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { handleAddToCart: handleCardAddToCart } = useCardAddToCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -1100,17 +1101,17 @@ const ThemeProductDetail = () => {
                       <button
                         type="button"
                         className="circle-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addProductFromCard(related, { addToCart, navigate, toast, productPath });
-                        }}
+                        onClick={(e) => handleCardAddToCart(related, e)}
                       >
                         <FaShoppingCart />
                       </button>
                       <button
                         type="button"
                         className="circle-btn"
-                        onClick={() => navigate(productPath(related))}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(productPath(related));
+                        }}
                       >
                         <FaSearch />
                       </button>
@@ -1131,9 +1132,7 @@ const ThemeProductDetail = () => {
                     <button
                       type="button"
                       className="card-buy-btn"
-                      onClick={() =>
-                        addProductFromCard(related, { addToCart, navigate, toast, productPath })
-                      }
+                      onClick={(e) => handleCardAddToCart(related, e)}
                     >
                       Add to Cart
                     </button>

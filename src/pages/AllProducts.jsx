@@ -8,14 +8,13 @@ import SideDrawer from '../components/SideDrawer';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import FilterBar from '../components/FilterBar';
-import { useCart } from '../context/CartContext';
 import { productPath, setPageSeo } from '../utils/seo';
-import { addProductFromCard } from '../utils/cartHelpers';
+import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import '../assets/css/AllProducts.css';
 
 const AllProducts = () => {
-  const { addToCart } = useCart();
   const navigate = useNavigate();
+  const { handleAddToCart } = useCardAddToCart();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [products, setProducts] = useState([]);
@@ -82,10 +81,6 @@ const AllProducts = () => {
     q ? setSearchParams({ search: q }) : setSearchParams({});
   };
 
-  const handleAddToCart = (product) => {
-    addProductFromCard(product, { addToCart, navigate, toast, productPath });
-  };
-
   const setPriceRange = (range) => {
     setPriceMin(range?.min ?? '');
     setPriceMax(range?.max ?? '');
@@ -120,17 +115,17 @@ const AllProducts = () => {
         <div className="item-overlay">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddToCart(product);
-            }}
+            onClick={(e) => handleAddToCart(product, e)}
             className="circle-btn"
           >
             <ShoppingCart />
           </button>
           <button
             type="button"
-            onClick={() => navigate(productPath(product))}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(productPath(product));
+            }}
             className="circle-btn"
           >
             <ArrowRight />
@@ -153,17 +148,14 @@ const AllProducts = () => {
               <span className="price-now">${product.price}</span>
             )}
           </div>
-          <button type="button" className="card-buy-btn" onClick={() => handleAddToCart(product)}>
+          <button type="button" className="card-buy-btn" onClick={(e) => handleAddToCart(product, e)}>
             Add to Cart
           </button>
         </div>
         <div className="item-inline-actions">
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddToCart(product);
-            }}
+            onClick={(e) => handleAddToCart(product, e)}
             className="circle-btn item-inline-btn"
           >
             <ShoppingCart />

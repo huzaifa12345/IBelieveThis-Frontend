@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Ruler } from 'lucide-react';
 import { themeApi } from '../services/themeApi';
+import '../assets/css/admin-size-manager.css';
 
 /**
  * Etsy-style product size variations.
@@ -131,7 +132,7 @@ const SizeManager = ({ sizes = [], onChange }) => {
             <tbody>
               {sizes.map((sizeItem, index) => (
                 <tr key={`${sizeItem.size}-${index}`}>
-                  <td className="fw-semibold">{sizeItem.size}</td>
+                  <td className="fw-semibold text-dark">{sizeItem.size}</td>
                   <td>
                     <input
                       type="number"

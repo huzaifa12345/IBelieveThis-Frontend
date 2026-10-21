@@ -3,19 +3,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { FaSearch, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
 import SideDrawer from '../components/SideDrawer';
 import ThemeFooter from '../components/ThemeFooter';
 import TopBar from '../components/TopBar';
 import FilterBar from '../components/FilterBar';
 import { productPath, setPageSeo, injectJsonLd, removeJsonLd, absoluteUrl, SITE_NAME } from '../utils/seo';
-import { addProductFromCard } from '../utils/cartHelpers';
+import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import './DynamicCategory.css';
 
 const DynamicCategory = () => {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { handleAddToCart } = useCardAddToCart();
 
   const [category, setCategory] = useState(null);
   const [notFound, setNotFound] = useState(false);
@@ -115,10 +114,6 @@ const DynamicCategory = () => {
     };
   }, [categorySlug, currentPage, debouncedSearchQuery, sortBy, priceMin, priceMax, notFound]);
 
-  const handleAddToCart = (product) => {
-    addProductFromCard(product, { addToCart, navigate, toast, productPath });
-  };
-
   const handleSearch = (e) => {
     e.preventDefault();
     setCurrentPage(1);
@@ -201,17 +196,17 @@ const DynamicCategory = () => {
                     <div className="item-overlay">
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(product);
-                        }}
+                        onClick={(e) => handleAddToCart(product, e)}
                         className="circle-btn"
                       >
                         <FaShoppingCart />
                       </button>
                       <button
                         type="button"
-                        onClick={() => navigate(productPath(product))}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(productPath(product));
+                        }}
                         className="circle-btn"
                       >
                         <FaSearch />
@@ -237,7 +232,7 @@ const DynamicCategory = () => {
                       <button
                         type="button"
                         className="card-buy-btn"
-                        onClick={() => handleAddToCart(product)}
+                        onClick={(e) => handleAddToCart(product, e)}
                       >
                         Add to Cart
                       </button>
@@ -245,14 +240,17 @@ const DynamicCategory = () => {
                     <div className="item-inline-actions">
                       <button
                         type="button"
-                        onClick={() => handleAddToCart(product)}
+                        onClick={(e) => handleAddToCart(product, e)}
                         className="circle-btn item-inline-btn"
                       >
                         <FaShoppingCart />
                       </button>
                       <button
                         type="button"
-                        onClick={() => navigate(productPath(product))}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(productPath(product));
+                        }}
                         className="circle-btn item-inline-btn"
                       >
                         <FaSearch />

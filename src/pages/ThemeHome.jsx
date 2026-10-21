@@ -8,20 +8,18 @@ import {
 import { themeApi } from '../services/themeApi';
 import websiteSettingsApi from '../services/websiteSettingsApi';
 import toast from 'react-hot-toast';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import SideDrawer from '../components/SideDrawer';
 import TopBar from '../components/TopBar'; 
 import ThemeFooter from '../components/ThemeFooter';
 import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE } from '../utils/seo';
 import { cardImage, cloudinarySrcSet, galleryImage } from '../utils/cloudinary';
-import { addProductFromCard } from '../utils/cartHelpers';
+import { useCardAddToCart } from '../hooks/useCardAddToCart';
 
 import '../assets/css/ThemeHome.css';
 
 const ThemeHome = () => {
     const navigate = useNavigate();
-    const { addToCart } = useCart();
+    const { handleAddToCart } = useCardAddToCart();
     const [categories, setCategories] = useState([]);
     const [productsByCategory, setProductsByCategory] = useState({});
     const [loading, setLoading] = useState(true);
@@ -195,15 +193,6 @@ const ThemeHome = () => {
         fetchData();
     }, []);
 
-    const handleAddToCart = (product) => {
-        addProductFromCard(product, {
-            addToCart,
-            navigate,
-            toast,
-            productPath,
-        });
-    };
-
     if (loading) return (
         <div className="loader-container">
             <div className="theme-loader"></div>
@@ -331,8 +320,14 @@ const ThemeHome = () => {
                                             </div>
                                         ) : null}
                                         <div className="item-overlay">
-                                            <button onClick={() => handleAddToCart(product)} className="circle-btn"><FaShoppingCart /></button>
-                                            <button onClick={() => navigate(productPath(product))} className="circle-btn"><FaSearch /></button>
+                                            <button
+                                              type="button"
+                                              onClick={(e) => handleAddToCart(product, e)}
+                                              className="circle-btn"
+                                            >
+                                              <FaShoppingCart />
+                                            </button>
+                                            <button type="button" onClick={() => navigate(productPath(product))} className="circle-btn"><FaSearch /></button>
                                         </div>
                                     </div>
                                     <div className="item-details">
@@ -348,7 +343,7 @@ const ThemeHome = () => {
                                                 <span className="price-now">${product.price}</span>
                                             )}
                                         </div>
-                                        <button onClick={() => handleAddToCart(product)} className="card-buy-btn">Add to Cart</button>
+                                        <button type="button" onClick={(e) => handleAddToCart(product, e)} className="card-buy-btn">Add to Cart</button>
                                     </div>
                                 </div>
                             ))}
