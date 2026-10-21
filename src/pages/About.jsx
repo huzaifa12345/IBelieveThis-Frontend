@@ -4,11 +4,17 @@ import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import { useState, useEffect } from 'react';
 import SideDrawer from '../components/SideDrawer';
+import { useStoreSettings } from '../hooks/useStoreSettings';
 import { SITE_NAME, setPageSeo } from '../utils/seo';
 import '../assets/css/InfoPages.css';
 
 const About = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+  const { get } = useStoreSettings();
+  const email = get('contact_email', '');
+  const phone = get('contact_phone', '');
+  const address = get('contact_address', '');
+  const returnDays = get('return_window_days', '7');
 
   useEffect(() => {
     setPageSeo({
@@ -100,14 +106,42 @@ const About = () => {
                 <li>
                   <strong>Clear policies</strong> —{' '}
                   <Link to="/return-policy" className="info-link">
-                    7-day money-back &amp; exchange
+                    {returnDays}-day money-back &amp; exchange
                   </Link>
                 </li>
                 <li>
-                  <strong>Direct support</strong> — shop online with care that feels personal
+                  <strong>Direct support</strong> —{' '}
+                  <Link to="/contact" className="info-link">
+                    Contact us
+                  </Link>
+                  {email ? (
+                    <>
+                      {' '}
+                      or{' '}
+                      <a className="info-link" href={`mailto:${email}`}>
+                        {email}
+                      </a>
+                    </>
+                  ) : (
+                    ' — shop online with care that feels personal'
+                  )}
                 </li>
               </ul>
             </div>
+            {(email || phone || address) && (
+              <div className="info-card mt-4">
+                <h2 className="info-card-title">Store Contact</h2>
+                {email ? (
+                  <p className="info-body mb-1">
+                    <a className="info-link" href={`mailto:${email}`}>
+                      {email}
+                    </a>
+                  </p>
+                ) : null}
+                {phone ? <p className="info-body mb-1">{phone}</p> : null}
+                {address ? <p className="info-body mb-0">{address}</p> : null}
+              </div>
+            )}
           </div>
         </div>
       </section>

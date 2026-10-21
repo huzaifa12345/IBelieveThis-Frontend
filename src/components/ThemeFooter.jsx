@@ -1,36 +1,78 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaInstagram, FaWhatsapp, FaPinterestP, FaEtsy, FaArrowUp } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaPinterestP, FaEtsy, FaArrowUp } from 'react-icons/fa';
+import { useStoreSettings } from '../hooks/useStoreSettings';
 import '../assets/css/Footer.css';
 
 const Footer = () => {
+  const { get } = useStoreSettings();
   const handleScrollTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const socials = [
+    { key: 'social_pinterest', href: get('social_pinterest'), className: 'pinterest', label: 'Pinterest', Icon: FaPinterestP },
+    { key: 'social_etsy', href: get('social_etsy'), className: 'etsy', label: 'Etsy', Icon: FaEtsy },
+    { key: 'social_instagram', href: get('social_instagram'), className: 'instagram', label: 'Instagram', Icon: FaInstagram },
+    { key: 'social_facebook', href: get('social_facebook'), className: 'facebook', label: 'Facebook', Icon: FaFacebookF },
+  ].filter((s) => s.href && s.href !== '#');
+
+  const email = get('contact_email', '');
+  const phone = get('contact_phone', '');
+
   return (
     <footer className="ts-simple-footer">
-      {/* Top Section: Social Icons in Center */}
       <div className="ts-footer-middle">
-        <div className="ts-social-bar">
-          <a href="#" className="ts-soc-btn pinterest" aria-label="Pinterest"><FaPinterestP /></a>
-          <a href="https://www.etsy.com/shop/IBelieveThis" target="_blank" rel="noopener noreferrer" className="ts-soc-btn etsy" aria-label="Etsy"><FaEtsy /></a>
-          <a href="#" className="ts-soc-btn instagram" aria-label="Instagram"><FaInstagram /></a>
-          <a href="#" className="ts-soc-btn facebook" aria-label="Facebook"><FaFacebookF /></a>
-          {/* <a href="https://wa.me/923227594213" target="_blank" rel="noopener noreferrer" className="ts-soc-btn whatsapp" aria-label="WhatsApp"><FaWhatsapp /></a> */}
-        </div>
+        {socials.length > 0 && (
+          <div className="ts-social-bar">
+            {socials.map(({ key, href, className, label, Icon }) => (
+              <a
+                key={key}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`ts-soc-btn ${className}`}
+                aria-label={label}
+              >
+                <Icon />
+              </a>
+            ))}
+          </div>
+        )}
 
-        {/* Left Side Link */}
-        <div className="ts-footer-single-link">
-          <Link to="/return-policy" onClick={handleScrollTop}>Return &amp; Exchange Policy</Link>
+        <nav className="ts-footer-links" aria-label="Footer">
+          <Link to="/about" onClick={handleScrollTop}>About</Link>
+          <Link to="/contact" onClick={handleScrollTop}>Contact</Link>
+          <Link to="/shipping-policy" onClick={handleScrollTop}>Shipping Policy</Link>
+          <Link to="/return-policy" onClick={handleScrollTop}>Return &amp; Exchange</Link>
+          <Link to="/privacy-policy" onClick={handleScrollTop}>Privacy Policy</Link>
+          <Link to="/terms-of-service" onClick={handleScrollTop}>Terms of Service</Link>
+        </nav>
+
+        {(email || phone) && (
+          <p className="ts-footer-contact">
+            {email ? <a href={`mailto:${email}`}>{email}</a> : null}
+            {email && phone ? ' · ' : null}
+            {phone ? <span>{phone}</span> : null}
+          </p>
+        )}
+
+        <div className="ts-payment-row">
+          <span className="ts-pay-badge">Visa</span>
+          <span className="ts-pay-badge">Mastercard</span>
+          <span className="ts-pay-badge">Amex</span>
+          <span className="ts-pay-badge">Discover</span>
+          <span className="ts-stripe-note">Secure checkout by Stripe</span>
         </div>
       </div>
 
-      {/* Bottom Wood Strip Banner */}
       <div className="ts-bottom-wood-bar">
         <div className="ts-wood-bar-content">
           <p className="ts-copy-text">
-            &copy; 2026 <b>IBelieveThis</b> - Designed by <Link to="https://codebasesln.com" target="_blank" rel="noopener noreferrer"><span className="ts-dev-text">CodeBase Solutions</span></Link>
+            &copy; 2026 <b>IBelieveThis</b> - Designed by{' '}
+            <Link to="https://codebasesln.com" target="_blank" rel="noopener noreferrer">
+              <span className="ts-dev-text">CodeBase Solutions</span>
+            </Link>
           </p>
           <button className="ts-wood-scroll-btn" onClick={handleScrollTop} aria-label="Scroll to top">
             <FaArrowUp />

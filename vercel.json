@@ -15,7 +15,8 @@
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" }
+    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ],
   "cleanUrls": true,
   "trailingSlash": false

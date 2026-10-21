@@ -202,6 +202,42 @@ async function main() {
   );
 
   writeRoute(
+    '/privacy-policy',
+    withSeoBody(
+      injectHead(template, {
+        title: 'Privacy Policy | IBelieveThis',
+        description: 'Privacy Policy for IBelieveThis — data, cookies, and Stripe payments.',
+        path: '/privacy-policy',
+      }),
+      `<h1>Privacy Policy</h1><p>How IBelieveThis handles customer data, cookies, and payments.</p>`
+    )
+  );
+
+  writeRoute(
+    '/terms-of-service',
+    withSeoBody(
+      injectHead(template, {
+        title: 'Terms of Service | IBelieveThis',
+        description: 'Terms of Service for shopping at IBelieveThis.',
+        path: '/terms-of-service',
+      }),
+      `<h1>Terms of Service</h1><p>Terms for using the IBelieveThis storefront.</p>`
+    )
+  );
+
+  writeRoute(
+    '/shipping-policy',
+    withSeoBody(
+      injectHead(template, {
+        title: 'Shipping Policy | IBelieveThis',
+        description: 'Shipping, processing times, carriers and tracking for IBelieveThis.',
+        path: '/shipping-policy',
+      }),
+      `<h1>Shipping Policy</h1><p>Processing times, carriers, tracking, and lost or damaged packages.</p>`
+    )
+  );
+
+  writeRoute(
     '/all-products',
     withSeoBody(
       injectHead(template, {

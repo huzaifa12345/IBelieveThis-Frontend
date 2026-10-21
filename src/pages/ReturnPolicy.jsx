@@ -4,19 +4,29 @@ import { useState, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import SideDrawer from '../components/SideDrawer';
+import { useStoreSettings } from '../hooks/useStoreSettings';
 import { SITE_NAME, setPageSeo } from '../utils/seo';
 import '../assets/css/InfoPages.css';
 
 const ReturnPolicy = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+  const { get } = useStoreSettings();
+  const days = get('return_window_days', '7');
+  const shippingRule = get(
+    'return_shipping_rule',
+    'If your item arrives damaged or incorrect, we cover return shipping. For change-of-mind returns within the return window, the customer is responsible for return shipping unless we state otherwise in writing.'
+  );
+  const email = get('contact_email', '');
+  const phone = get('contact_phone', '');
+  const address = get('contact_address', '');
 
   useEffect(() => {
     setPageSeo({
       title: 'Return & Exchange Policy',
-      description: `7-day money-back guarantee and exchanges at ${SITE_NAME}.`,
+      description: `${days}-day money-back guarantee and exchanges at ${SITE_NAME}.`,
       path: '/return-policy',
     });
-  }, []);
+  }, [days]);
 
   return (
     <div className="info-page-wrapper">
@@ -37,20 +47,19 @@ const ReturnPolicy = () => {
           </h1>
           <p className="info-lead">
             At {SITE_NAME}, we want you to love your gear. If something is not right, we offer a{' '}
-            <strong>7-day money-back guarantee</strong> and exchange options on eligible orders.
+            <strong>{days}-day money-back guarantee</strong> and exchange options on eligible orders.
           </p>
 
           <div className="row g-4 mt-1">
             <div className="col-md-6">
               <div className="info-card h-100">
-                <h2 className="info-card-title">7-Day Money-Back Guarantee</h2>
+                <h2 className="info-card-title">{days}-Day Money-Back Guarantee</h2>
                 <p className="info-body">
-                  You may request a refund within <strong>7 days</strong> of delivery if the item
-                  is unused, undamaged, and in its original condition with tags and packaging
-                  intact.
+                  You may request a refund within <strong>{days} days</strong> of delivery if the item
+                  is unused, undamaged, and in its original condition with tags and packaging intact.
                 </p>
                 <ul className="info-list">
-                  <li>Request must be submitted within 7 days of receiving your order</li>
+                  <li>Request must be submitted within {days} days of receiving your order</li>
                   <li>Item must not have been worn for riding, washed, or altered</li>
                   <li>All original tags, labels, and packaging should be included</li>
                   <li>Approved refunds are issued to the original payment method</li>
@@ -63,7 +72,7 @@ const ReturnPolicy = () => {
                 <h2 className="info-card-title">Exchanges</h2>
                 <p className="info-body">
                   Need a different size or style? We offer exchanges within the same{' '}
-                  <strong>7-day window</strong>, subject to stock availability.
+                  <strong>{days}-day window</strong>, subject to stock availability.
                 </p>
                 <ul className="info-list">
                   <li>Exchange for size or an available alternate item of equal value</li>
@@ -79,16 +88,26 @@ const ReturnPolicy = () => {
             <h2 className="info-card-title">How to Start a Return or Exchange</h2>
             <ol className="info-steps">
               <li>
-                Contact us within 7 days of delivery with your order number and reason for return
-                or exchange.
+                Contact us within {days} days of delivery with your order number and reason for return
+                or exchange via our{' '}
+                <Link to="/contact" className="info-link">
+                  Contact page
+                </Link>
+                {email ? (
+                  <>
+                    {' '}
+                    or email{' '}
+                    <a className="info-link" href={`mailto:${email}`}>
+                      {email}
+                    </a>
+                  </>
+                ) : null}
+                .
               </li>
               <li>
-                Wait for approval and return instructions. Do not ship items back without
-                confirmation.
+                Wait for approval and return instructions. Do not ship items back without confirmation.
               </li>
-              <li>
-                Pack the item securely in its original packaging and ship it as directed.
-              </li>
+              <li>Pack the item securely in its original packaging and ship it as directed.</li>
               <li>
                 Once we receive and inspect the item, we process your refund or ship the exchange.
               </li>
@@ -100,7 +119,7 @@ const ReturnPolicy = () => {
               <div className="info-card h-100">
                 <h2 className="info-card-title">Non-Returnable Items</h2>
                 <ul className="info-list">
-                  <li>Items returned after the 7-day window</li>
+                  <li>Items returned after the {days}-day window</li>
                   <li>Used, worn, damaged, or altered products</li>
                   <li>Items missing tags, accessories, or original packaging</li>
                   <li>Final-sale or clearance items marked as non-returnable</li>
@@ -109,23 +128,40 @@ const ReturnPolicy = () => {
             </div>
             <div className="col-lg-6">
               <div className="info-card h-100">
-                <h2 className="info-card-title">Shipping &amp; Timing</h2>
+                <h2 className="info-card-title">Return Shipping</h2>
+                <p className="info-body">{shippingRule}</p>
                 <ul className="info-list">
-                  <li>Return shipping costs may be the customer&apos;s responsibility unless the item arrived damaged or incorrect</li>
                   <li>Inspection typically completes within a few business days of receipt</li>
-                  <li>Refunds can take additional time to appear on your statement depending on your bank</li>
+                  <li>
+                    Refunds can take additional time to appear on your statement depending on your bank
+                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
+          {(email || phone || address) && (
+            <div className="info-card mt-4">
+              <h2 className="info-card-title">Support</h2>
+              {email ? (
+                <p className="info-body mb-1">
+                  Email:{' '}
+                  <a className="info-link" href={`mailto:${email}`}>
+                    {email}
+                  </a>
+                </p>
+              ) : null}
+              {phone ? <p className="info-body mb-1">Phone: {phone}</p> : null}
+              {address ? <p className="info-body mb-0">Address: {address}</p> : null}
+            </div>
+          )}
+
           <p className="info-body mt-4 mb-0">
-            Questions? Reach out through our{' '}
-            <Link to="/about" className="info-link">
-              About
+            Questions? Use our{' '}
+            <Link to="/contact" className="info-link">
+              Contact
             </Link>{' '}
-            page or shop contact options — we are happy to help you complete a smooth return or
-            exchange.
+            page — we are happy to help with a smooth return or exchange.
           </p>
         </motion.div>
       </section>

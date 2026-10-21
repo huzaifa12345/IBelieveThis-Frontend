@@ -10,13 +10,12 @@ import './assets/css/bootstrap.min.css';
 import './assets/css/style.css';
 import './assets/css/theme-fixes.css';
 
-/** Home is eager — avoids Suspense "Loading…" then ThemeHome loader (double flash) */
 import ThemeHome from './pages/ThemeHome';
 
-/** Public storefront — code-split so admin/Stripe stay out of the main chunk */
 const About = lazy(() => import('./pages/About'));
 const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
 const Contact = lazy(() => import('./pages/Contact'));
+const PolicyPage = lazy(() => import('./pages/PolicyPage'));
 const DynamicCategory = lazy(() => import('./pages/DynamicCategory'));
 const ThemeProductDetail = lazy(() => import('./pages/ThemeProductDetail'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -25,13 +24,14 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ChangePassword = lazy(() => import('./pages/ChangePassword'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-
-/** Heavy / private — never in the public critical path */
 const Checkout = lazy(() => import('./pages/Checkout'));
 const Admin = lazy(() => import('./pages/Admin'));
 
-/** Minimal fallback — pages that have their own loader won't feel double-loaded */
 const RouteFallback = () => null;
+
+const PrivacyPolicy = () => <PolicyPage type="privacy" />;
+const TermsOfService = () => <PolicyPage type="terms" />;
+const ShippingPolicy = () => <PolicyPage type="shipping" />;
 
 function App() {
   return (
@@ -54,6 +54,9 @@ function App() {
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/return-policy" element={<ReturnPolicy />} />
                       <Route path="/refund-policy" element={<ReturnPolicy />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
+                      <Route path="/shipping-policy" element={<ShippingPolicy />} />
                       <Route path="/admin" element={<Admin />} />
                       <Route path="/all-products" element={<AllProducts />} />
                       <Route path="/product/:slug" element={<ThemeProductDetail />} />

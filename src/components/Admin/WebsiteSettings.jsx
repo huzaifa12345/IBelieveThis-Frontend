@@ -184,6 +184,36 @@ const WebsiteSettings = () => {
       );
     }
 
+    const isLong =
+      setting.type === 'textarea' ||
+      String(setting.key || '').startsWith('policy_') ||
+      String(setting.key || '') === 'return_shipping_rule' ||
+      (setting.value && String(setting.value).length > 120);
+
+    if (isLong) {
+      return (
+        <div className="d-flex flex-column gap-2">
+          <textarea
+            className="form-control bg-white"
+            rows={10}
+            value={setting.value || ''}
+            onChange={(e) => handleTextChange(setting.id, e.target.value)}
+            disabled={isSaving}
+            placeholder={`Enter ${setting.description}`}
+          />
+          <button
+            type="button"
+            className="btn btn-sm btn-dark align-self-end"
+            onClick={() => handleUpdateSetting(setting.id, setting.value)}
+            disabled={isSaving}
+          >
+            {isSaving ? <RefreshCw size={14} className="spinner-border spinner-border-sm border-0" /> : <Save size={14} />}
+            <span className="ms-2">Save</span>
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="input-group shadow-sm">
         <input
@@ -222,7 +252,7 @@ const WebsiteSettings = () => {
           <h4 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
             <Settings size={24} className="text-primary" /> Configuration Console
           </h4>
-          <p className="text-muted small mb-0">Manage global variables and chemical brand identity</p>
+          <p className="text-muted small mb-0">Logo, hero, contact, social links, and store policies</p>
         </div>
         <div className="btn-group shadow-sm">
           <button className="btn btn-outline-primary bg-white px-3" onClick={fetchSettings}>
