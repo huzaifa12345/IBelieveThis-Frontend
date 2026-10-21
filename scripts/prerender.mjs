@@ -11,6 +11,7 @@ import { SITE_FAQS, faqsForCategory, toFaqPageSchema } from '../src/content/faqs
 import { categoryIntro } from '../src/content/categoryIntros.js';
 import { GUIDES } from '../src/content/guides.js';
 import { SIZE_GUIDE } from '../src/content/sizeGuide.js';
+import { heroImage, heroSrcSet, heroPreloadAttrs } from '../src/utils/cloudinary.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../dist');
@@ -72,7 +73,7 @@ async function fetchAllProducts(apiBase) {
   return products;
 }
 
-function injectHead(html, { title, description, path: pagePath, image, jsonLd, type = 'website' }) {
+function injectHead(html, { title, description, path: pagePath, image, jsonLd, type = 'website', heroPreload, heroBootstrap } = {}) {
   const url = `${SITE}${pagePath}`;
   const img = image || `${SITE}/og-image.jpg`;
   const safeTitle = escapeHtml(title);
@@ -98,6 +99,31 @@ function injectHead(html, { title, description, path: pagePath, image, jsonLd, t
     `<meta name="twitter:description" content="${safeDesc}" />`
   );
   out = out.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${escapeHtml(img)}" />`);
+
+  const preloadTag = heroPreload?.href
+    ? `<link rel="preload" as="image" href="${escapeHtml(heroPreload.href)}"${
+        heroPreload.imagesrcset ? ` imagesrcset="${escapeHtml(heroPreload.imagesrcset)}"` : ''
+      } imagesizes="100vw" fetchpriority="high" />`
+    : '';
+  const bootstrapTag = heroBootstrap?.image
+    ? `<script>window.__HERO_BOOTSTRAP__=${JSON.stringify({
+        image: heroBootstrap.image,
+        title: heroBootstrap.title || '',
+        description: heroBootstrap.description || '',
+      })};</script>`
+    : '';
+
+  if (out.includes('<!-- HERO_PRELOAD -->')) {
+    out = out.replace('<!-- HERO_PRELOAD -->', preloadTag);
+  } else if (preloadTag) {
+    out = out.replace('</head>', `  ${preloadTag}\n  </head>`);
+  }
+  if (out.includes('<!-- HERO_BOOTSTRAP -->')) {
+    out = out.replace('<!-- HERO_BOOTSTRAP -->', bootstrapTag);
+  } else if (bootstrapTag) {
+    out = out.replace('</head>', `  ${bootstrapTag}\n  </head>`);
+  }
+  out = out.replace(/<!-- HERO_PRELOAD -->\s*/g, '').replace(/<!-- HERO_BOOTSTRAP -->\s*/g, '');
 
   const blocks = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
   if (blocks.length) {
@@ -388,18 +414,53 @@ ${g.sections.map((s) => `<h2>${escapeHtml(s.h2)}</h2><p>${escapeHtml(s.body)}</p
   // Home (enriched after API if available)
   let products = [];
   let categories = [];
+  let heroBootstrap = null;
   if (API_ORIGIN) {
     try {
-      [products, categories] = await Promise.all([
+      const [prods, cats, settingsRes] = await Promise.all([
         fetchAllProducts(API_ORIGIN),
         fetchJson(`${API_ORIGIN}/api/categories`),
+        fetchJson(`${API_ORIGIN}/api/website-settings`).catch(() => null),
       ]);
-      if (!Array.isArray(categories)) categories = categories?.categories || [];
+      products = prods;
+      categories = !Array.isArray(cats) ? cats?.categories || [] : cats;
       console.log(`Products: ${products.length}, Categories: ${categories.length}`);
+
+      const heroRows = settingsRes?.data?.hero || settingsRes?.hero || [];
+      if (Array.isArray(heroRows)) {
+        const byKey = Object.fromEntries(heroRows.map((s) => [s.key, s.value]));
+        if (byKey.hero_slide_1) {
+          heroBootstrap = {
+            image: byKey.hero_slide_1,
+            title: byKey.hero_title_1 || 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
+            description:
+              byKey.hero_description_1 ||
+              'Motorcycle guardian bells, biker boots, jackets and riding gloves.',
+          };
+          console.log('  ✓ hero_slide_1 for LCP preload');
+        }
+      }
     } catch (e) {
       console.warn('API fetch failed for catalog prerender:', e.message);
     }
   }
+
+  const heroPreload = heroBootstrap?.image ? heroPreloadAttrs(heroBootstrap.image) : null;
+  const heroLcpImg = heroBootstrap?.image
+    ? `<figure class="lcp-hero">
+<img
+  src="${escapeHtml(heroImage(heroBootstrap.image, 800))}"
+  srcset="${escapeHtml(heroSrcSet(heroBootstrap.image) || '')}"
+  sizes="100vw"
+  width="1200"
+  height="800"
+  alt="${escapeHtml(heroBootstrap.title || 'IBelieveThis hero')}"
+  fetchpriority="high"
+  loading="eager"
+  decoding="async"
+/>
+</figure>`
+    : '';
 
   const homeCatHtml = (categories || [])
     .map((cat) => {
@@ -439,6 +500,9 @@ ${links ? `<ul>${links}</ul>` : `<p><a href="${SITE}/category/${slug}">Shop ${es
         description:
           'Shop US biker gear — motorcycle guardian bells, biker boots, leather jackets, riding gloves, cowboy hats and patches. Ships from the USA.',
         path: '/',
+        image: heroPreload?.href || undefined,
+        heroPreload,
+        heroBootstrap,
         jsonLd: [
           orgSchema(),
           {
@@ -454,7 +518,8 @@ ${links ? `<ul>${links}</ul>` : `<p><a href="${SITE}/category/${slug}">Shop ${es
           },
         ],
       }),
-      `<h1>Biker Gear &amp; Motorcycle Guardian Bells | IBelieveThis</h1>
+      `${heroLcpImg}
+<h1>Biker Gear &amp; Motorcycle Guardian Bells | IBelieveThis</h1>
 <p>IBelieveThis is a US motorcycle lifestyle shop for guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches. Ships from the USA. Secure checkout by Stripe. Also on <a href="${ETSY}">Etsy</a>.</p>
 <p><a href="${SITE}/all-products">Shop all products</a> · <a href="${SITE}/faq">FAQ</a> · <a href="${SITE}/guides">Guides</a> · <a href="${SITE}/size-guide">Size Guide</a> · <a href="${SITE}/contact">Contact</a></p>
 ${homeCatHtml || '<section><h2>Shop</h2><p><a href="' + SITE + '/all-products">Browse the full catalog</a></p></section>'}

@@ -12,6 +12,7 @@ import { categoryIntro } from '../content/categoryIntros';
 import { faqsForCategory } from '../content/faqs';
 import { productPath, setPageSeo, injectJsonLd, removeJsonLd, absoluteUrl, SITE_NAME } from '../utils/seo';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
+import { cardImage, cardSrcSet } from '../utils/cloudinary';
 import './DynamicCategory.css';
 
 const DynamicCategory = () => {
@@ -218,7 +219,13 @@ const DynamicCategory = () => {
                 <div key={product.id} className={`item-card ${viewMode === 'list' ? 'list-card' : ''}`}>
                   <div className="item-thumb" onClick={() => navigate(productPath(product))}>
                     <img
-                      src={product.images?.[0] || product.image_url || '/placeholder.png'}
+                      src={cardImage(product.images?.[0] || product.image_url) || product.images?.[0] || product.image_url || '/placeholder.png'}
+                      srcSet={cardSrcSet(product.images?.[0] || product.image_url)}
+                      sizes="(max-width: 768px) 45vw, 22vw"
+                      width={300}
+                      height={300}
+                      loading="lazy"
+                      decoding="async"
                       alt={product.name}
                     />
                     {product.discount_price && product.discount_price < product.price && (

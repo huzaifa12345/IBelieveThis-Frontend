@@ -1,5 +1,6 @@
 /**
- * Optimize Cloudinary delivery URLs (f_auto, q_auto, width).
+ * Optimize Cloudinary delivery URLs.
+ * Inserts: /image/upload/f_auto,q_auto,w_XXX,c_limit/ (or c_fill for square cards).
  * Non-Cloudinary URLs are returned unchanged.
  */
 
@@ -16,7 +17,7 @@ export function isCloudinaryUrl(url) {
 export function cloudinaryUrl(url, opts = {}) {
   if (!url || !isCloudinaryUrl(url)) return url || '';
 
-  const { width, height, crop = 'fill' } = opts;
+  const { width, height, crop = 'limit' } = opts;
   const transforms = ['f_auto', 'q_auto'];
   if (width) transforms.push(`w_${Math.round(width)}`);
   if (height) transforms.push(`h_${Math.round(height)}`);
@@ -29,10 +30,9 @@ export function cloudinaryUrl(url, opts = {}) {
   const before = url.slice(0, idx + marker.length);
   let after = url.slice(idx + marker.length);
 
-  // Strip an existing transform segment (version folder starts with v digits, or raw path)
+  // Strip an existing transform segment
   if (/^(?:[^/]+,)+[^/]+\//.test(after) || /^[a-z]_/.test(after.split('/')[0] || '')) {
     const parts = after.split('/');
-    // If first segment looks like transforms (contains _), drop it
     if (parts[0] && /_/.test(parts[0]) && !/^v\d+$/.test(parts[0])) {
       after = parts.slice(1).join('/');
     }
@@ -41,24 +41,62 @@ export function cloudinaryUrl(url, opts = {}) {
   return `${before}${transforms.join(',')}/${after}`;
 }
 
-/** Card thumbnail (~400w) */
+/** Card thumbnail default (~300w square) */
 export function cardImage(url) {
-  return cloudinaryUrl(url, { width: 400, height: 400, crop: 'fill' });
+  return cloudinaryUrl(url, { width: 300, height: 300, crop: 'fill' });
 }
 
-/** Product gallery main (~800–1200w) */
+/** Product gallery / hero (~800–1200w, c_limit) */
 export function galleryImage(url, width = 800) {
   return cloudinaryUrl(url, { width, crop: 'limit' });
 }
 
 /**
- * srcSet for responsive product/card images
+ * srcSet for responsive images
  * @param {string} url
  * @param {number[]} widths
+ * @param {{ crop?: string, height?: number }} [opts]
  */
-export function cloudinarySrcSet(url, widths = [400, 800, 1200]) {
+export function cloudinarySrcSet(url, widths = [400, 800, 1200], opts = {}) {
   if (!isCloudinaryUrl(url)) return undefined;
+  const { crop = 'limit', height } = opts;
   return widths
-    .map((w) => `${cloudinaryUrl(url, { width: w, crop: 'limit' })} ${w}w`)
+    .map((w) => {
+      const transformed = cloudinaryUrl(url, {
+        width: w,
+        height: height ? Math.round((height / widths[widths.length - 1]) * w) : undefined,
+        crop,
+      });
+      return `${transformed} ${w}w`;
+    })
     .join(', ');
+}
+
+/** Hero LCP: 400 / 800 / 1200 */
+export function heroSrcSet(url) {
+  return cloudinarySrcSet(url, [400, 800, 1200], { crop: 'limit' });
+}
+
+export function heroImage(url, width = 800) {
+  return cloudinaryUrl(url, { width, crop: 'limit' }) || url || '';
+}
+
+/** Product / category cards: 300 / 600 */
+export function cardSrcSet(url) {
+  if (!isCloudinaryUrl(url)) return undefined;
+  return [300, 600]
+    .map((w) => `${cloudinaryUrl(url, { width: w, height: w, crop: 'fill' })} ${w}w`)
+    .join(', ');
+}
+
+/** Build preload attrs for first hero slide (prerender / head). */
+export function heroPreloadAttrs(url) {
+  if (!url) return null;
+  const href = heroImage(url, 800);
+  const imagesrcset = heroSrcSet(url);
+  return {
+    href,
+    imagesrcset: imagesrcset || undefined,
+    imagesizes: '100vw',
+  };
 }

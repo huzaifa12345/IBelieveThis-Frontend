@@ -1,22 +1,58 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
-    FaSearch, FaShoppingCart, FaTruck, FaShieldAlt, 
-    FaHeadset, FaArrowRight, FaStar, FaChevronLeft, FaChevronRight 
+    FaSearch, FaShoppingCart, 
+    FaArrowRight, FaStar, FaChevronLeft, FaChevronRight 
 } from 'react-icons/fa';
 import { themeApi } from '../services/themeApi';
 import websiteSettingsApi from '../services/websiteSettingsApi';
 import toast from 'react-hot-toast';
-import SideDrawer from '../components/SideDrawer';
 import TopBar from '../components/TopBar'; 
 import ThemeFooter from '../components/ThemeFooter';
 import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE, buildOrganizationSchema } from '../utils/seo';
-import { cardImage, cloudinarySrcSet, galleryImage } from '../utils/cloudinary';
+import { cardImage, cardSrcSet, heroImage, heroSrcSet } from '../utils/cloudinary';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import { useStoreSettings } from '../hooks/useStoreSettings';
 
 import '../assets/css/ThemeHome.css';
+
+const SideDrawer = lazy(() => import('../components/SideDrawer'));
+
+const DEFAULT_HERO = {
+  image: '',
+  title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
+  description: 'Motorcycle guardian bells, biker boots, jackets and riding gloves. Ships from the USA.',
+};
+
+function readBootstrapHero() {
+  if (typeof window === 'undefined') return null;
+  const boot = window.__HERO_BOOTSTRAP__;
+  if (boot?.image) {
+    return {
+      image: boot.image,
+      title: boot.title || DEFAULT_HERO.title,
+      description: boot.description || DEFAULT_HERO.description,
+    };
+  }
+  return null;
+}
+
+function slidesFromHeroSettings(heroSettings) {
+  const slides = [];
+  for (let i = 1; i <= 4; i++) {
+    const imageSetting = heroSettings.find((s) => s.key === `hero_slide_${i}`);
+    const titleSetting = heroSettings.find((s) => s.key === `hero_title_${i}`);
+    const descSetting = heroSettings.find((s) => s.key === `hero_description_${i}`);
+    if (imageSetting?.value) {
+      slides.push({
+        image: imageSetting.value,
+        title: titleSetting?.value || `Slide ${i}`,
+        description: descSetting?.value || '',
+      });
+    }
+  }
+  return slides;
+}
 
 const ThemeHome = () => {
     const navigate = useNavigate();
@@ -24,18 +60,15 @@ const ThemeHome = () => {
     const { settings } = useStoreSettings();
     const [categories, setCategories] = useState([]);
     const [productsByCategory, setProductsByCategory] = useState({});
-    const [loading, setLoading] = useState(true);
+    const [catalogLoading, setCatalogLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [heroSlides, setHeroSlides] = useState([
-        {
-            image:
-                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+Cjwvc3ZnPg==',
-            title: 'Biker Gear & Motorcycle Guardian Bells | IBelieveThis',
-            description: 'Motorcycle guardian bells, biker boots, jackets and riding gloves. Ships from the USA.',
-        },
-    ]);
+    const [heroReady, setHeroReady] = useState(false);
+    const [heroSlides, setHeroSlides] = useState(() => {
+      const boot = readBootstrapHero();
+      return boot ? [boot] : [DEFAULT_HERO];
+    });
 
     useEffect(() => {
         setPageSeo({
@@ -65,131 +98,85 @@ const ThemeHome = () => {
         };
     }, [settings]);
 
-    // Fetch hero slides from website settings
+    // Hero settings — do not block first paint if bootstrap image exists
     useEffect(() => {
+        let cancelled = false;
         const fetchHeroSlides = async () => {
             try {
                 const response = await websiteSettingsApi.getWebsiteSettings();
-                if (response.success && response.data && response.data.hero) {
-                    const heroSettings = response.data.hero;
-                    
-                    // Build slides array from settings
-                    const slides = [];
-                    for (let i = 1; i <= 4; i++) {
-                        const imageSetting = heroSettings.find(s => s.key === `hero_slide_${i}`);
-                        const titleSetting = heroSettings.find(s => s.key === `hero_title_${i}`);
-                        const descSetting = heroSettings.find(s => s.key === `hero_description_${i}`);
-                        
-                        if (imageSetting && imageSetting.value) {
-                            slides.push({
-                                image: imageSetting.value,
-                                title: titleSetting?.value || `Slide ${i}`,
-                                description: descSetting?.value || ''
-                            });
-                        }
-                    }
-                    
-                    // Only use defaults if no slides found in settings
-                    if (slides.length === 0) {
-                        setHeroSlides([
-                            {
-                                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                                title: "Ride Ready Gear",
-                                description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
-                            },
-                            {
-                                image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                                title: "Biker Style Essentials",
-                                description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
-                            }
-                        ]);
-                    } else {
+                if (cancelled) return;
+                if (response.success && response.data?.hero) {
+                    const slides = slidesFromHeroSettings(response.data.hero);
+                    if (slides.length > 0) {
                         setHeroSlides(slides);
+                        return;
                     }
-                } else {
-                    // Fallback to defaults if settings not available
-                    setHeroSlides([
-                        {
-                            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                            title: "Ride Ready Gear",
-                            description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
-                        },
-                        {
-                            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                            title: "Biker Style Essentials",
-                            description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
-                        }
-                    ]);
+                }
+                if (!readBootstrapHero()?.image) {
+                    setHeroSlides([DEFAULT_HERO]);
                 }
             } catch (error) {
                 console.error('Error fetching hero slides:', error);
-                // Fallback on error
-                setHeroSlides([
-                    {
-                        image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                        title: "Ride Ready Gear",
-                        description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
-                    },
-                    {
-                        image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                        title: "Biker Style Essentials",
-                        description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
-                    }
-                ]);
             }
         };
-        
         fetchHeroSlides();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            handleNextSlide();
-        }, 6000);
-        return () => clearInterval(interval);
+    const handleNextSlide = useCallback(() => {
+        setCurrentSlide((prev) => (prev + 1) % Math.max(heroSlides.length, 1));
     }, [heroSlides.length]);
 
-    const handleNextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    };
+    const handlePrevSlide = useCallback(() => {
+        setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % Math.max(heroSlides.length, 1));
+    }, [heroSlides.length]);
 
-    const handlePrevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
-    };
+    // Auto-advance only after LCP image has painted
+    useEffect(() => {
+        if (!heroReady || heroSlides.length < 2) return undefined;
+        const interval = setInterval(handleNextSlide, 6000);
+        return () => clearInterval(interval);
+    }, [heroReady, heroSlides.length, handleNextSlide]);
 
     useEffect(() => {
+        let cancelled = false;
         const fetchData = async () => {
             try {
-                setLoading(true);
+                setCatalogLoading(true);
                 const categoriesData = await themeApi.getCategories();
-                if (!categoriesData || !Array.isArray(categoriesData)) return;
+                if (cancelled || !categoriesData || !Array.isArray(categoriesData)) return;
 
-                const activeCategories = categoriesData.filter(cat => cat.is_active);
+                const activeCategories = categoriesData.filter((cat) => cat.is_active);
                 setCategories(activeCategories);
 
                 const productsData = {};
-                for (const category of activeCategories) {
-                    const response = await themeApi.getProductsByCategory(category.id);
-                    const products = response.products || response || [];
-                    productsData[category.id] = products.slice(0, 4);
-                }
-                setProductsByCategory(productsData);
+                await Promise.all(
+                    activeCategories.map(async (category) => {
+                        const response = await themeApi.getProductsByCategory(category.id);
+                        const products = response.products || response || [];
+                        productsData[category.id] = products.slice(0, 4);
+                    })
+                );
+                if (!cancelled) setProductsByCategory(productsData);
             } catch (error) {
                 console.error('Error:', error);
-                toast.error('Failed to load products');
+                if (!cancelled) toast.error('Failed to load products');
             } finally {
-                setLoading(false);
+                if (!cancelled) setCatalogLoading(false);
             }
         };
         fetchData();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
-    if (loading) return (
-        <div className="loader-container">
-            <div className="theme-loader"></div>
-            <p>Loading IBelieveThis...</p>
-        </div>
-    );
+    const slide = heroSlides[currentSlide] || heroSlides[0] || DEFAULT_HERO;
+    const isFirstPaintSlide = currentSlide === 0;
+    const heroSrc = heroImage(slide.image, 800) || slide.image;
+    const heroSet = slide.image ? heroSrcSet(slide.image) : undefined;
 
     return (
         <div className="home-modern-layout">
@@ -203,59 +190,57 @@ const ThemeHome = () => {
                 }}
             />
 
-            {/* --- HERO SECTION WITH ARROWS --- */}
             <section className="hero-wrapper">
                 <div className="container position-relative">
-                    
-                    {/* Navigation Arrows */}
-                    <button className="slider-arrow prev-arrow" onClick={handlePrevSlide}>
-                        <FaChevronLeft />
-                    </button>
-                    <button className="slider-arrow next-arrow" onClick={handleNextSlide}>
-                        <FaChevronRight />
-                    </button>
+                    {heroSlides.length > 1 && (
+                      <>
+                        <button type="button" className="slider-arrow prev-arrow" onClick={handlePrevSlide} aria-label="Previous slide">
+                            <FaChevronLeft />
+                        </button>
+                        <button type="button" className="slider-arrow next-arrow" onClick={handleNextSlide} aria-label="Next slide">
+                            <FaChevronRight />
+                        </button>
+                      </>
+                    )}
 
                     <div className="hero-grid">
                         <div className="hero-info-col">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={currentSlide}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.5 }}
-                                >
-                                    <span className="hero-tag">Premium Quality • Professional Grade</span>
-                                    <h1 className="hero-title">
-                                      {(heroSlides[currentSlide].title || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
-                                    </h1>
-                                    <p className="hero-desc">
-                                      {(heroSlides[currentSlide].description || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
-                                    </p>
-                                    <div className="hero-btns">
-                                        <Link to="/all-products" className="btn-main">Shop Now <FaArrowRight /></Link>
-                                        <Link to="/all-products" className="btn-sec">View Catalog</Link>
-                                    </div>
-                                </motion.div>
-                            </AnimatePresence>
+                            <span className="hero-tag">Premium Quality • Professional Grade</span>
+                            <h1 className="hero-title">
+                              {(slide.title || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
+                            </h1>
+                            <p className="hero-desc">
+                              {(slide.description || '').replace(/Charlie Bells/gi, 'IBelieveThis')}
+                            </p>
+                            <div className="hero-btns">
+                                <Link to="/all-products" className="btn-main">Shop Now <FaArrowRight /></Link>
+                                <Link to="/all-products" className="btn-sec">View Catalog</Link>
+                            </div>
                         </div>
 
                         <div className="hero-visual-col">
                             <div className="image-frame">
-                                <motion.img 
-                                    key={currentSlide}
-                                    src={galleryImage(heroSlides[currentSlide].image, 1200) || heroSlides[currentSlide].image}
-                                    alt={heroSlides[currentSlide].title || 'IBelieveThis hero'}
+                                {/* Plain <img> — no fade/scale animation (delays LCP) */}
+                                {heroSrc ? (
+                                  <img
+                                    key={slide.image || currentSlide}
+                                    src={heroSrc}
+                                    srcSet={heroSet}
+                                    sizes="100vw"
+                                    alt={slide.title || 'IBelieveThis hero'}
                                     width={1200}
                                     height={800}
-                                    fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
-                                    loading={currentSlide === 0 ? 'eager' : 'lazy'}
+                                    fetchPriority={isFirstPaintSlide ? 'high' : 'auto'}
+                                    loading={isFirstPaintSlide ? 'eager' : 'lazy'}
                                     decoding="async"
-                                    initial={{ scale: 1.1, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ duration: 0.8 }}
                                     className="hero-img"
-                                />
+                                    onLoad={() => {
+                                      if (isFirstPaintSlide) setHeroReady(true);
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="hero-img hero-img-placeholder" aria-hidden="true" />
+                                )}
                                 <div className="floating-badge">
                                     <FaStar /> <span>Ships from the USA</span>
                                 </div>
@@ -263,17 +248,30 @@ const ThemeHome = () => {
                         </div>
                     </div>
                     
-                    <div className="hero-dots">
-                        {heroSlides.map((_, i) => (
-                            <div key={i} className={`dot ${i === currentSlide ? 'active' : ''}`} onClick={() => setCurrentSlide(i)} />
-                        ))}
-                    </div>
+                    {heroSlides.length > 1 && (
+                      <div className="hero-dots">
+                          {heroSlides.map((_, i) => (
+                              <button
+                                type="button"
+                                key={i}
+                                className={`dot ${i === currentSlide ? 'active' : ''}`}
+                                onClick={() => setCurrentSlide(i)}
+                                aria-label={`Go to slide ${i + 1}`}
+                              />
+                          ))}
+                      </div>
+                    )}
                 </div>
             </section>
 
-            {/* --- PRODUCTS SECTION --- */}
             <section className="content-area container">
-                {categories.map((category) => (
+                {catalogLoading ? (
+                  <div className="home-catalog-skeleton" aria-busy="true" aria-label="Loading products">
+                    <div className="home-skel-block" />
+                    <div className="home-skel-block" />
+                  </div>
+                ) : (
+                  categories.map((category) => (
                     <div key={category.id} className="category-group">
                         <div className="group-header">
                             <div>
@@ -288,20 +286,21 @@ const ThemeHome = () => {
                         </div>
 
                         <div className="product-grid-modern">
-                            {productsByCategory[category.id]?.map((product) => (
+                            {productsByCategory[category.id]?.map((product) => {
+                              const img = product.images?.[0] || product.image_url;
+                              return (
                                 <div key={product.id} className="item-card">
                                     <div className="item-thumb">
                                         <img
-                                          src={cardImage(product.images?.[0] || product.image_url) || product.images?.[0] || product.image_url || '/src/assets/images/tshirt-img.png'}
-                                          srcSet={cloudinarySrcSet(product.images?.[0] || product.image_url, [320, 400, 640])}
-                                          sizes="(max-width: 768px) 45vw, (max-width: 1599px) 30vw, 22vw"
-                                          width={400}
-                                          height={400}
+                                          src={cardImage(img) || img || '/placeholder.png'}
+                                          srcSet={cardSrcSet(img)}
+                                          sizes="(max-width: 768px) 45vw, 22vw"
+                                          width={300}
+                                          height={300}
                                           loading="lazy"
                                           decoding="async"
                                           alt={product.name}
                                         />
-                                        {/* Discount Badge on Image */}
                                         {product.discount_price && product.discount_price < product.price && (
                                             <div className="discount-badge-image">
                                                 -{Math.round(((product.price - product.discount_price) / product.price) * 100)}%
@@ -332,7 +331,6 @@ const ThemeHome = () => {
                                                 <>
                                                     <span className="price-original">${product.price}</span>
                                                     <span className="price-now">${product.discount_price}</span>
-                                                
                                                 </>
                                             ) : (
                                                 <span className="price-now">${product.price}</span>
@@ -341,24 +339,20 @@ const ThemeHome = () => {
                                         <button type="button" onClick={(e) => handleAddToCart(product, e)} className="card-buy-btn">Add to Cart</button>
                                     </div>
                                 </div>
-                            ))}
+                              );
+                            })}
                         </div>
                     </div>
-                ))}
+                  ))
+                )}
             </section>
 
-            {/* <section className="feature-strip">
-                <div className="container">
-                    <div className="feature-grid">
-                        <div className="feat-box"><FaTruck className="f-icon" /> <div><h6>Fast Delivery</h6><p>Same day dispatch</p></div></div>
-                        <div className="feat-box"><FaShieldAlt className="f-icon" /> <div><h6>Tested Products</h6><p>100% Original products</p></div></div>
-                        <div className="feat-box"><FaHeadset className="f-icon" /> <div><h6>24/7 Support</h6><p>Professional service</p></div></div>
-                    </div>
-                </div>
-            </section> */}
-
             <ThemeFooter />
-            <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
+            {sideDrawerOpen ? (
+              <Suspense fallback={null}>
+                <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
+              </Suspense>
+            ) : null}
         </div>
     );
 };

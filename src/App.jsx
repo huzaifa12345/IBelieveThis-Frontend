@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AnimatePresence } from 'framer-motion';
 import { lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -47,35 +46,33 @@ function App() {
             <CardAddToCartProvider>
               <div className="App">
                 <main>
-                  <AnimatePresence mode="wait">
-                    <Suspense fallback={<RouteFallback />}>
-                      <Routes>
-                        <Route path="/" element={<ThemeHome />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/change-password" element={<ChangePassword />} />
-                        <Route path="/cart" element={<Cart />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/faq" element={<Faq />} />
-                        <Route path="/size-guide" element={<SizeGuide />} />
-                        <Route path="/guides" element={<GuidesIndex />} />
-                        <Route path="/guides/:slug" element={<GuideArticle />} />
-                        <Route path="/return-policy" element={<ReturnPolicy />} />
-                        <Route path="/refund-policy" element={<ReturnPolicy />} />
-                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                        <Route path="/terms-of-service" element={<TermsOfService />} />
-                        <Route path="/shipping-policy" element={<ShippingPolicy />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/all-products" element={<AllProducts />} />
-                        <Route path="/product/:slug" element={<ThemeProductDetail />} />
-                        <Route path="/category/:categorySlug" element={<DynamicCategory />} />
-                        <Route path="/404" element={<NotFound />} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </AnimatePresence>
+                  <Suspense fallback={<RouteFallback />}>
+                    <Routes>
+                      <Route path="/" element={<ThemeHome />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/change-password" element={<ChangePassword />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/checkout" element={<Checkout />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/faq" element={<Faq />} />
+                      <Route path="/size-guide" element={<SizeGuide />} />
+                      <Route path="/guides" element={<GuidesIndex />} />
+                      <Route path="/guides/:slug" element={<GuideArticle />} />
+                      <Route path="/return-policy" element={<ReturnPolicy />} />
+                      <Route path="/refund-policy" element={<ReturnPolicy />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<TermsOfService />} />
+                      <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="/all-products" element={<AllProducts />} />
+                      <Route path="/product/:slug" element={<ThemeProductDetail />} />
+                      <Route path="/category/:categorySlug" element={<DynamicCategory />} />
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
                 </main>
               </div>
               <Toaster

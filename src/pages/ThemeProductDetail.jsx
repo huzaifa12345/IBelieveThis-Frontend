@@ -375,7 +375,7 @@ import {
 } from '../utils/seo';
 import { faqsForCategory } from '../content/faqs';
 import FaqSection from '../components/FaqSection';
-import { galleryImage, cloudinarySrcSet, cardImage } from '../utils/cloudinary';
+import { galleryImage, cloudinarySrcSet, cardImage, cardSrcSet } from '../utils/cloudinary';
 import { useCardAddToCart } from '../hooks/useCardAddToCart';
 import '../assets/css/ThemeProductDetail.css';
 import '../assets/css/ThemeHome.css';
@@ -1091,7 +1091,7 @@ const ThemeProductDetail = () => {
                         related.image_url ||
                         '/placeholder.png'
                       }
-                      srcSet={cloudinarySrcSet(related.images?.[0] || related.image_url, [320, 400, 640])}
+                      srcSet={cardSrcSet(related.images?.[0] || related.image_url)}
                       sizes="(max-width: 768px) 45vw, 22vw"
                       width={400}
                       height={400}
