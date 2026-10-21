@@ -15,6 +15,7 @@ import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE } from '../utils/seo';
 import { cardImage, cloudinarySrcSet, galleryImage } from '../utils/cloudinary';
+import { addProductFromCard } from '../utils/cartHelpers';
 
 import '../assets/css/ThemeHome.css';
 
@@ -195,19 +196,12 @@ const ThemeHome = () => {
     }, []);
 
     const handleAddToCart = (product) => {
-        addToCart({
-            ...product,
-            price: product.discount_price || product.price
+        addProductFromCard(product, {
+            addToCart,
+            navigate,
+            toast,
+            productPath,
         });
-        toast.success(`${product.name} added to cart!`);
-    };
-
-    const handleBuyNow = (product) => {
-        addToCart({
-            ...product,
-            price: product.discount_price || product.price
-        }, 1);
-        navigate('/checkout');
     };
 
     if (loading) return (
@@ -283,7 +277,7 @@ const ThemeHome = () => {
                                     className="hero-img"
                                 />
                                 <div className="floating-badge">
-                                    <FaStar /> <span>#1 in U.S</span>
+                                    <FaStar /> <span>Ships from the USA</span>
                                 </div>
                             </div>
                         </div>

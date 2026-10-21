@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, ArrowRight, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingCart, ArrowRight, Loader2, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
 import SideDrawer from '../components/SideDrawer';
@@ -10,34 +10,33 @@ import ThemeFooter from '../components/ThemeFooter';
 import FilterBar from '../components/FilterBar';
 import { useCart } from '../context/CartContext';
 import { productPath, setPageSeo } from '../utils/seo';
+import { addProductFromCard } from '../utils/cartHelpers';
 import '../assets/css/AllProducts.css';
 
 const AllProducts = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setPageSeo({
-      title: 'Shop All Products',
-      description: 'Browse the full IBelieveThis catalog — motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches.',
-      path: '/all-products',
-    });
-  }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const [viewMode, setViewMode] = useState('grid');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
 
   useEffect(() => {
-    fetchProducts();
-  }, [searchQuery, sortBy, currentPage, priceRange]);
+    setPageSeo({
+      title: 'Shop All Products',
+      description:
+        'Browse the full IBelieveThis catalog — motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches.',
+      path: '/all-products',
+    });
+  }, []);
 
   useEffect(() => {
     const q = searchParams.get('search') || '';
@@ -47,27 +46,34 @@ const AllProducts = () => {
     }
   }, [searchParams]);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const params = {
-        page: currentPage,
-        limit: 12,
-        sortBy,
-        search: searchQuery,
-        ...(priceRange.min && { minPrice: priceRange.min }),
-        ...(priceRange.max && { maxPrice: priceRange.max })
-      };
-      
-      const data = await themeApi.getProducts(params);
-      setProducts(data.products || []);
-      setPagination(data.pagination || {});
-    } catch (error) {
-      toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let cancelled = false;
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const params = {
+          page: currentPage,
+          limit: 12,
+          sortBy,
+          search: searchQuery,
+          ...(priceMin !== '' && { minPrice: priceMin }),
+          ...(priceMax !== '' && { maxPrice: priceMax }),
+        };
+        const data = await themeApi.getProducts(params);
+        if (cancelled) return;
+        setProducts(data.products || []);
+        setPagination(data.pagination || {});
+      } catch (error) {
+        if (!cancelled) toast.error('Failed to load products');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchQuery, sortBy, currentPage, priceMin, priceMax]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -77,19 +83,13 @@ const AllProducts = () => {
   };
 
   const handleAddToCart = (product) => {
-    addToCart({ 
-      ...product, 
-      price: product.discount_price || product.price
-    }, 1);
-    toast.success(`${product.name} added to cart!`);
+    addProductFromCard(product, { addToCart, navigate, toast, productPath });
   };
 
-  const handleBuyNow = (product) => {
-    addToCart({ 
-      ...product, 
-      price: product.discount_price || product.price
-    }, 1);
-    navigate('/checkout');
+  const setPriceRange = (range) => {
+    setPriceMin(range?.min ?? '');
+    setPriceMax(range?.max ?? '');
+    setCurrentPage(1);
   };
 
   const ProductCard = ({ product, viewMode }) => (
@@ -98,25 +98,47 @@ const AllProducts = () => {
       className={`item-card ${viewMode === 'list' ? 'list-card' : ''}`}
     >
       <div className="item-thumb" onClick={() => navigate(productPath(product))}>
-        <img 
-          src={product.images?.[0] || product.image_url || '/placeholder.png'} 
-          alt={product.name} 
+        <img
+          src={product.images?.[0] || product.image_url || '/placeholder.png'}
+          alt={product.name}
         />
-        {/* Discount Badge on Image */}
         {product.discount_price && product.discount_price < product.price && (
           <div className="discount-badge-image">
             -{Math.round(((product.price - product.discount_price) / product.price) * 100)}%
           </div>
         )}
         <div className="item-overlay">
-          <button onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }} className="circle-btn"><ShoppingCart /></button>
-          <button onClick={() => navigate(productPath(product))} className="circle-btn"><ArrowRight /></button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(product);
+            }}
+            className="circle-btn"
+          >
+            <ShoppingCart />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(productPath(product))}
+            className="circle-btn"
+          >
+            <ArrowRight />
+          </button>
         </div>
       </div>
-      
+
       <div className="item-details">
         <div className="item-meta">
-          <h5 className="item-name" title={product.name}>{product.name}</h5>
+          <h5 className="item-name" title={product.name}>
+            {product.name}
+          </h5>
+          {product.reviewCount > 0 ? (
+            <div className="item-rating small text-muted mb-1">
+              <Star size={12} className="text-warning me-1" />
+              {product.averageRating} ({product.reviewCount})
+            </div>
+          ) : null}
           <div className="item-pricing">
             {product.discount_price && product.discount_price < product.price ? (
               <>
@@ -127,11 +149,28 @@ const AllProducts = () => {
               <span className="price-now">${product.price}</span>
             )}
           </div>
-          <button className="card-buy-btn" onClick={() => handleBuyNow(product)}>Buy Now</button>
+          <button type="button" className="card-buy-btn" onClick={() => handleAddToCart(product)}>
+            Add to Cart
+          </button>
         </div>
         <div className="item-inline-actions">
-          <button onClick={(e) => { e.stopPropagation(); handleAddToCart(product); }} className="circle-btn item-inline-btn"><ShoppingCart /></button>
-          <button onClick={() => navigate(productPath(product))} className="circle-btn item-inline-btn"><ArrowRight /></button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart(product);
+            }}
+            className="circle-btn item-inline-btn"
+          >
+            <ShoppingCart />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(productPath(product))}
+            className="circle-btn item-inline-btn"
+          >
+            <ArrowRight />
+          </button>
         </div>
       </div>
     </motion.div>
@@ -139,29 +178,28 @@ const AllProducts = () => {
 
   return (
     <div className="ap-page-wrapper">
-      <TopBar 
+      <TopBar
         onMenuToggle={() => setSideDrawerOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         handleSearch={handleSearch}
       />
+      <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
 
-      {/* Filter Bar */}
       <FilterBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        onSearch={fetchProducts}
+        onSearch={() => setCurrentPage(1)}
         sortBy={sortBy}
         setSortBy={setSortBy}
         viewMode={viewMode}
         setViewMode={setViewMode}
-        priceRange={priceRange}
+        priceRange={{ min: priceMin, max: priceMax }}
         setPriceRange={setPriceRange}
-        onApplyFilters={fetchProducts}
+        onApplyFilters={() => setCurrentPage(1)}
       />
 
       <div className="container py-5">
-        {/* Content */}
         {loading ? (
           <div className="text-center py-5">
             <Loader2 className="animate-spin text-navy mx-auto" size={40} />
@@ -169,8 +207,8 @@ const AllProducts = () => {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-5">
-            <h4 className="text-muted">No chemical products found</h4>
-            <p>Try adjusting your search query</p>
+            <h4 className="text-muted">No products found</h4>
+            <p>Try adjusting your search or price filters</p>
           </div>
         ) : (
           <>
@@ -180,20 +218,19 @@ const AllProducts = () => {
               ))}
             </div>
 
-            {/* Pagination */}
             {pagination.pages > 1 && (
               <div className="ap-pagination-wrap mt-5">
-                <button 
-                  className="ap-page-nav-btn" 
+                <button
+                  className="ap-page-nav-btn"
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
                 >
                   <ChevronLeft size={20} />
                 </button>
 
                 {[...Array(pagination.pages)].map((_, i) => (
-                  <button 
-                    key={i} 
+                  <button
+                    key={i}
                     className={`ap-page-num ${currentPage === i + 1 ? 'active' : ''}`}
                     onClick={() => setCurrentPage(i + 1)}
                   >
@@ -201,10 +238,10 @@ const AllProducts = () => {
                   </button>
                 ))}
 
-                <button 
-                  className="ap-page-nav-btn" 
+                <button
+                  className="ap-page-nav-btn"
                   disabled={currentPage === pagination.pages}
-                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -215,7 +252,6 @@ const AllProducts = () => {
       </div>
 
       <ThemeFooter />
-      <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaSearch, FaShoppingCart } from 'react-icons/fa';
+import { FaSearch, FaShoppingCart, FaStar } from 'react-icons/fa';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
@@ -9,16 +9,18 @@ import ThemeFooter from '../components/ThemeFooter';
 import TopBar from '../components/TopBar';
 import FilterBar from '../components/FilterBar';
 import { productPath, setPageSeo, injectJsonLd, removeJsonLd, absoluteUrl, SITE_NAME } from '../utils/seo';
+import { addProductFromCard } from '../utils/cartHelpers';
 import './DynamicCategory.css';
 
 const DynamicCategory = () => {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  
+
   const [category, setCategory] = useState(null);
   const [notFound, setNotFound] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [categoryLoading, setCategoryLoading] = useState(true);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -26,8 +28,9 @@ const DynamicCategory = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('created_at');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
 
   useEffect(() => {
     if (!category) return;
@@ -54,7 +57,7 @@ const DynamicCategory = () => {
   useEffect(() => {
     const fetchCategoryData = async () => {
       try {
-        setLoading(true);
+        setCategoryLoading(true);
         setNotFound(false);
         const categoryData = await themeApi.getCategoryById(categorySlug);
         if (!categoryData || categoryData.error || categoryData.success === false) {
@@ -67,7 +70,7 @@ const DynamicCategory = () => {
         setNotFound(true);
         setCategory(null);
       } finally {
-        setLoading(false);
+        setCategoryLoading(false);
       }
     };
 
@@ -75,61 +78,56 @@ const DynamicCategory = () => {
   }, [categorySlug]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const productsData = await themeApi.getProductsByCategory(categorySlug, {
-          page: currentPage,
-          limit: 12,
-          search: searchQuery,
-          sort_by: sortBy,
-          ...(priceRange.min && { min_price: priceRange.min }),
-          ...(priceRange.max && { max_price: priceRange.max })
-        });
-        
-        setFilteredProducts(productsData.products || []);
-        setTotalPages(productsData.pagination?.pages || 1);
-      } catch (error) {
-        toast.error('Failed to load products');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (categorySlug) fetchProducts();
-  }, [categorySlug, currentPage, debouncedSearchQuery, sortBy, priceRange]);
-
-  // Debounce search query
-  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
       setCurrentPage(1);
-    }, 500); // 500ms delay
-
+    }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const handleAddToCart = (product) => {
-    addToCart({ 
-      ...product, 
-      selectedSize: "Standard",
-      price: product.discount_price || product.price
-    }, 1);
-    toast.success(`${product.name} added to cart!`);
-  };
+  useEffect(() => {
+    let cancelled = false;
+    const fetchProducts = async () => {
+      if (!categorySlug || notFound) return;
+      try {
+        setProductsLoading(true);
+        const productsData = await themeApi.getProductsByCategory(categorySlug, {
+          page: currentPage,
+          limit: 12,
+          search: debouncedSearchQuery,
+          sort_by: sortBy,
+          ...(priceMin !== '' && { min_price: priceMin }),
+          ...(priceMax !== '' && { max_price: priceMax }),
+        });
+        if (cancelled) return;
+        setFilteredProducts(productsData.products || []);
+        setTotalPages(productsData.pagination?.pages || 1);
+      } catch (error) {
+        if (!cancelled) toast.error('Failed to load products');
+      } finally {
+        if (!cancelled) setProductsLoading(false);
+      }
+    };
 
-  const handleBuyNow = (product) => {
-    addToCart({ 
-      ...product, 
-      selectedSize: "Standard",
-      price: product.discount_price || product.price
-    }, 1);
-    navigate('/checkout');
+    fetchProducts();
+    return () => {
+      cancelled = true;
+    };
+  }, [categorySlug, currentPage, debouncedSearchQuery, sortBy, priceMin, priceMax, notFound]);
+
+  const handleAddToCart = (product) => {
+    addProductFromCard(product, { addToCart, navigate, toast, productPath });
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1); 
+    setCurrentPage(1);
+  };
+
+  const setPriceRange = (range) => {
+    setPriceMin(range?.min ?? '');
+    setPriceMax(range?.max ?? '');
+    setCurrentPage(1);
   };
 
   if (notFound) {
@@ -137,67 +135,91 @@ const DynamicCategory = () => {
     return null;
   }
 
-  if (loading) return (
-    <div className="ct-loader-wrapper d-flex flex-column justify-content-center align-items-center vh-100">
-      <div className="spinner-border text-primary" role="status"></div>
-      <p className="mt-3 fw-bold text-white">Loading catalog…</p>
-    </div>
-  );
+  if (categoryLoading) {
+    return (
+      <div className="ct-loader-wrapper d-flex flex-column justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status"></div>
+        <p className="mt-3 fw-bold text-white">Loading catalog…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="ct-category-page-wrapper">
       <TopBar onMenuToggle={() => setSideDrawerOpen(true)} />
       <SideDrawer isOpen={sideDrawerOpen} onClose={() => setSideDrawerOpen(false)} />
 
+      <FilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearch={handleSearch}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        priceRange={{ min: priceMin, max: priceMax }}
+        setPriceRange={setPriceRange}
+        onApplyFilters={() => setCurrentPage(1)}
+      />
 
-      
-        {/* Search Bar */}
-        {/* Filter Bar */}
-        <FilterBar
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearch={() => { setCurrentPage(1); }}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          priceRange={priceRange}
-          setPriceRange={setPriceRange}
-          onApplyFilters={() => { setCurrentPage(1); }}
-        />
-
-        {/* Products Grid */}
-        <div className="container py-5">
-        <div className={`product-grid-modern ${viewMode === 'list' ? 'list-view' : ''}`}>
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-5 no-results">
-              <img src="/empty-box.png" alt="No products" className="mb-3" style={{width: '80px', opacity: 0.5}} />
-              <h3>No products found</h3>
-              <p>Try adjusting your search filters.</p>
-            </div>
-          ) : (
-            filteredProducts.map((product) => (
+      <div className="container py-5">
+        {productsLoading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status"></div>
+            <p className="mt-3 fw-bold text-muted">Loading products…</p>
+          </div>
+        ) : (
+          <div className={`product-grid-modern ${viewMode === 'list' ? 'list-view' : ''}`}>
+            {filteredProducts.length === 0 ? (
+              <div className="text-center py-5 no-results">
+                <h3>No products found</h3>
+                <p>Try adjusting your search filters.</p>
+              </div>
+            ) : (
+              filteredProducts.map((product) => (
                 <div key={product.id} className={`item-card ${viewMode === 'list' ? 'list-card' : ''}`}>
                   <div className="item-thumb" onClick={() => navigate(productPath(product))}>
-                    <img 
-                      src={product.images?.[0] || product.image_url || '/placeholder.png'} 
-                      alt={product.name} 
+                    <img
+                      src={product.images?.[0] || product.image_url || '/placeholder.png'}
+                      alt={product.name}
                     />
-                    {/* Discount Badge on Image */}
                     {product.discount_price && product.discount_price < product.price && (
                       <div className="discount-badge-image">
                         -{Math.round(((product.price - product.discount_price) / product.price) * 100)}%
                       </div>
                     )}
                     <div className="item-overlay">
-                      <button onClick={() => handleAddToCart(product)} className="circle-btn"><FaShoppingCart /></button>
-                      <button onClick={() => navigate(productPath(product))} className="circle-btn"><FaSearch /></button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product);
+                        }}
+                        className="circle-btn"
+                      >
+                        <FaShoppingCart />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(productPath(product))}
+                        className="circle-btn"
+                      >
+                        <FaSearch />
+                      </button>
                     </div>
                   </div>
-                  
+
                   <div className="item-details">
                     <div className="item-meta">
-                      <h5 className="item-name" title={product.name}>{product.name}</h5>
+                      <h5 className="item-name" title={product.name}>
+                        {product.name}
+                      </h5>
+                      {product.reviewCount > 0 ? (
+                        <div className="small text-muted mb-1">
+                          <FaStar className="text-warning me-1" />
+                          {product.averageRating} ({product.reviewCount})
+                        </div>
+                      ) : null}
                       <div className="item-pricing">
                         {product.discount_price && product.discount_price < product.price ? (
                           <>
@@ -208,22 +230,40 @@ const DynamicCategory = () => {
                           <span className="price-now">${product.price}</span>
                         )}
                       </div>
-                      <button className="card-buy-btn" onClick={() => handleAddToCart(product)}>Add to Cart</button>
+                      <button
+                        type="button"
+                        className="card-buy-btn"
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        Add to Cart
+                      </button>
                     </div>
                     <div className="item-inline-actions">
-                      <button onClick={() => handleAddToCart(product)} className="circle-btn item-inline-btn"><FaShoppingCart /></button>
-                      <button onClick={() => navigate(productPath(product))} className="circle-btn item-inline-btn"><FaSearch /></button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(product)}
+                        className="circle-btn item-inline-btn"
+                      >
+                        <FaShoppingCart />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(productPath(product))}
+                        className="circle-btn item-inline-btn"
+                      >
+                        <FaSearch />
+                      </button>
                     </div>
                   </div>
                 </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
-        {/* Professional Pagination */}
-        {totalPages > 1 && (
+        {totalPages > 1 && !productsLoading && (
           <div className="ct-pagination-wrapper mt-5">
-            <button 
+            <button
               className="ct-page-nav-btn"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
@@ -241,7 +281,7 @@ const DynamicCategory = () => {
                 </button>
               ))}
             </div>
-            <button 
+            <button
               className="ct-page-nav-btn"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
