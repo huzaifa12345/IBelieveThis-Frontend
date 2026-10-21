@@ -2,7 +2,7 @@
  * Build-time prerender (Approach A): full VISIBLE crawlable HTML inside #root.
  * React replaces #root on hydrate; bots without JS keep the full content.
  *
- * Env: PRERENDER_API_ORIGIN, SITE_URL
+ * Env: API_ORIGIN (preferred — same as sitemap), or PRERENDER_API_ORIGIN / VITE_API_URL; SITE_URL
  */
 import fs from 'fs';
 import path from 'path';
@@ -15,7 +15,12 @@ import { SIZE_GUIDE } from '../src/content/sizeGuide.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '../dist');
 const SITE = (process.env.SITE_URL || 'https://www.ibelievethis.us').replace(/\/$/, '');
-const API_ORIGIN = (process.env.PRERENDER_API_ORIGIN || process.env.VITE_API_URL || '')
+const API_ORIGIN = (
+  process.env.API_ORIGIN ||
+  process.env.PRERENDER_API_ORIGIN ||
+  process.env.VITE_API_URL ||
+  ''
+)
   .replace(/\/api\/?$/, '')
   .replace(/\/$/, '');
 const ETSY = 'https://www.etsy.com/shop/IBelieveThis';
@@ -506,7 +511,7 @@ ${catLines || `- Browse categories from the home page: ${SITE}/`}
   }
 
   if (!API_ORIGIN || !products.length) {
-    console.warn('Skipping product/category deep prerender — set PRERENDER_API_ORIGIN');
+    console.warn('Skipping product/category deep prerender — set API_ORIGIN (or PRERENDER_API_ORIGIN)');
     console.log('Prerender complete (static + home shell).');
     return;
   }
