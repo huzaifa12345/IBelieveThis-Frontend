@@ -9,7 +9,7 @@ import { useLogo } from '../context/LogoContext';
 import { isStaff } from '../utils/roles';
 import { useState, useEffect } from 'react';
 import { themeApi } from '../services/themeApi';
-import { SITE_NAME } from '../utils/seo';
+import { SITE_NAME, categoryPath } from '../utils/seo';
 import '../assets/css/SideDrawer.css';
 
 const SideDrawer = ({ isOpen, onClose }) => {
@@ -94,7 +94,7 @@ const SideDrawer = ({ isOpen, onClose }) => {
                         key={category.id}
                         className="cat-item"
                         onClick={() => {
-                          navigate(`/category/${category.id}`);
+                          navigate(categoryPath(category));
                           onClose();
                         }}
                       >

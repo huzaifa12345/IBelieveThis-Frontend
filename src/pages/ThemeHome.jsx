@@ -13,7 +13,8 @@ import { useAuth } from '../context/AuthContext';
 import SideDrawer from '../components/SideDrawer';
 import TopBar from '../components/TopBar'; 
 import ThemeFooter from '../components/ThemeFooter';
-import { productPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE } from '../utils/seo';
+import { productPath, categoryPath, setPageSeo, injectJsonLd, removeJsonLd, SITE_NAME, SITE_URL, SITE_TAGLINE } from '../utils/seo';
+import { cardImage, cloudinarySrcSet, galleryImage } from '../utils/cloudinary';
 
 import '../assets/css/ThemeHome.css';
 
@@ -26,12 +27,19 @@ const ThemeHome = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
     const [currentSlide, setCurrentSlide] = useState(0);
-    const [heroSlides, setHeroSlides] = useState([]);
+    const [heroSlides, setHeroSlides] = useState([
+        {
+            image:
+                'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjMWExYTFhIi8+Cjwvc3ZnPg==',
+            title: 'Ride Ready Gear',
+            description: 'Motorcycle guardian bells, biker boots, jackets and riding gloves.',
+        },
+    ]);
 
     useEffect(() => {
         setPageSeo({
             title: `${SITE_NAME} | ${SITE_TAGLINE}`,
-            description: 'Shop American-made decorative bells, home accents, and IBelieveThis collections. Secure checkout with fast US shipping.',
+            description: SITE_TAGLINE,
             path: '/',
         });
 
@@ -96,13 +104,13 @@ const ThemeHome = () => {
                         setHeroSlides([
                             {
                                 image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                                title: "Industrial Chemical Supply",
-                                description: "Reliable detergents and chemical essentials for business and household needs."
+                                title: "Ride Ready Gear",
+                                description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
                             },
                             {
                                 image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                                title: "Bulk Detergent & Cleaning Range",
-                                description: "High-performance detergents and cleaning products for daily use and home care operations."
+                                title: "Biker Style Essentials",
+                                description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
                             }
                         ]);
                     } else {
@@ -113,13 +121,13 @@ const ThemeHome = () => {
                     setHeroSlides([
                         {
                             image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                            title: "Industrial Chemical Supply",
-                            description: "Trusted detergents and cleaning solutions for every operational need."
+                            title: "Ride Ready Gear",
+                            description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
                         },
                         {
                             image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                            title: "Bulk Detergent Range",
-                            description: "High-performance cleaning products designed for daily use and home care operations."
+                            title: "Biker Style Essentials",
+                            description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
                         }
                     ]);
                 }
@@ -129,13 +137,13 @@ const ThemeHome = () => {
                 setHeroSlides([
                     {
                         image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDE8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Db21lIFNob3AgTm93ITwvdGV4dD4KPHN2Zz4=",
-                        title: "Industrial Chemical Supply",
-                        description: "Trusted detergents and cleaning solutions for every operational need."
+                        title: "Ride Ready Gear",
+                        description: "Motorcycle guardian bells, biker boots, jackets and riding gloves."
                     },
                     {
                         image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYwMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxNjAwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2MDAiIGhlaWdodD0iNjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjgwMCIgeT0iMzAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvIFNsaWRlIDI8L3RleHQ+Cjx0ZXh0IHg9IjgwMCIgeT0iMzQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5EZWFscyAmIE9mZmVycyE8L3RleHQ+Cjwvc3ZnPg==",
-                        title: "Bulk Detergent Range",
-                        description: "High-performance cleaning products designed for daily use and home care operations."
+                        title: "Biker Style Essentials",
+                        description: "Leather jackets, cowboy hats, patches and rider lifestyle gear."
                     }
                 ]);
             }
@@ -202,7 +210,7 @@ const ThemeHome = () => {
         navigate('/checkout');
     };
 
-    if (loading || heroSlides.length === 0) return (
+    if (loading) return (
         <div className="loader-container">
             <div className="theme-loader"></div>
             <p>Loading IBelieveThis...</p>
@@ -262,7 +270,13 @@ const ThemeHome = () => {
                             <div className="image-frame">
                                 <motion.img 
                                     key={currentSlide}
-                                    src={heroSlides[currentSlide].image}
+                                    src={galleryImage(heroSlides[currentSlide].image, 1200) || heroSlides[currentSlide].image}
+                                    alt={heroSlides[currentSlide].title || 'IBelieveThis hero'}
+                                    width={1200}
+                                    height={800}
+                                    fetchPriority={currentSlide === 0 ? 'high' : 'auto'}
+                                    loading={currentSlide === 0 ? 'eager' : 'lazy'}
+                                    decoding="async"
                                     initial={{ scale: 1.1, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ duration: 0.8 }}
@@ -292,14 +306,23 @@ const ThemeHome = () => {
                                 <h2 className="group-title">{category.name}</h2>
                                 <div className="title-line"></div>
                             </div>
-                            <Link to={`/category/${category.id}`} className="view-link">Explore All</Link>
+                            <Link to={categoryPath(category)} className="view-link">Explore All</Link>
                         </div>
 
                         <div className="product-grid-modern">
                             {productsByCategory[category.id]?.map((product) => (
                                 <div key={product.id} className="item-card">
                                     <div className="item-thumb">
-                                        <img src={product.images?.[0] || product.image_url || '/src/assets/images/tshirt-img.png'} alt={product.name} />
+                                        <img
+                                          src={cardImage(product.images?.[0] || product.image_url) || '/src/assets/images/tshirt-img.png'}
+                                          srcSet={cloudinarySrcSet(product.images?.[0] || product.image_url, [320, 400, 640])}
+                                          sizes="(max-width: 768px) 45vw, 22vw"
+                                          width={400}
+                                          height={400}
+                                          loading="lazy"
+                                          decoding="async"
+                                          alt={product.name}
+                                        />
                                         {/* Discount Badge on Image */}
                                         {product.discount_price && product.discount_price < product.price && (
                                             <div className="discount-badge-image">

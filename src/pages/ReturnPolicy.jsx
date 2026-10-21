@@ -1,14 +1,22 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
 import SideDrawer from '../components/SideDrawer';
-import { SITE_NAME } from '../utils/seo';
+import { SITE_NAME, setPageSeo } from '../utils/seo';
 import '../assets/css/InfoPages.css';
 
 const ReturnPolicy = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    setPageSeo({
+      title: 'Return & Exchange Policy',
+      description: `7-day money-back guarantee and exchanges at ${SITE_NAME}.`,
+      path: '/return-policy',
+    });
+  }, []);
 
   return (
     <div className="info-page-wrapper">

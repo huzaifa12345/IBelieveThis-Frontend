@@ -103,6 +103,7 @@ import { FaSearch, FaShoppingCart, FaChevronDown, FaBars, FaTimes } from 'react-
 import { useCart } from '../context/CartContext';
 import { useLogo } from '../context/LogoContext';
 import { themeApi } from '../services/themeApi';
+import { categoryPath } from '../utils/seo';
 import '../assets/css/Topbar.css';
 
 const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
@@ -226,7 +227,7 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
                 {categories && categories.length > 0 ? (
                   categories.map((category) => (
                     <li key={category.id || category._id}>
-                      <Link to={`/category/${category.id || category._id}`} className="ts-dropdown-item">
+                      <Link to={categoryPath(category)} className="ts-dropdown-item">
                         {category.name}
                       </Link>
                     </li>

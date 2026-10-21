@@ -1,6 +1,6 @@
 /**
  * Vercel serverless proxy → live backend sitemap.
- * Keeps https://ibelievethis.us/sitemap.xml always in sync with the catalog.
+ * Keeps https://www.ibelievethis.us/sitemap.xml always in sync with the catalog.
  *
  * Set Vercel env: API_ORIGIN=https://your-backend-host (no trailing slash)
  */

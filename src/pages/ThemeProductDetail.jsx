@@ -368,7 +368,9 @@ import {
   removeJsonLd,
   absoluteUrl,
   SITE_NAME,
+  buildProductOfferExtras,
 } from '../utils/seo';
+import { galleryImage, cloudinarySrcSet, cardImage } from '../utils/cloudinary';
 import '../assets/css/ThemeProductDetail.css';
 
 const ThemeProductDetail = () => {
@@ -411,6 +413,10 @@ const ThemeProductDetail = () => {
     try {
       setLoading(true);
       const productData = await themeApi.getProductById(slug);
+      if (!productData || productData.error) {
+        navigate('/404', { replace: true });
+        return;
+      }
       setProduct(productData);
 
       // Canonicalize barcode/id URLs to the SEO name slug
@@ -436,6 +442,7 @@ const ThemeProductDetail = () => {
       }
     } catch (error) {
       toast.error('Failed to load product');
+      navigate('/404', { replace: true });
     } finally {
       setLoading(false);
     }
@@ -444,7 +451,7 @@ const ThemeProductDetail = () => {
   useEffect(() => {
     if (!product) return;
 
-    const description = (product.description || `${product.name} from ${SITE_NAME}. American made decorative bells and home accents.`)
+    const description = (product.description || `${product.name} from ${SITE_NAME}. Motorcycle & biker gear for US riders.`)
       .replace(/<[^>]+>/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
@@ -464,8 +471,9 @@ const ThemeProductDetail = () => {
     const stockQty = Number(product.stock_quantity);
     const inStock = Number.isFinite(stockQty) ? stockQty > 0 : true;
     const categoryName =
-      product.category_relation?.name || product.category || 'Decorative Bells';
+      product.category_relation?.name || product.category || 'Motorcycle Gear';
     const skuValue = product.sku || product.barcode || `SKU-${product.id}`;
+    const offerExtras = buildProductOfferExtras();
 
     const productSchema = {
       '@context': 'https://schema.org/',
@@ -479,16 +487,6 @@ const ThemeProductDetail = () => {
       category: categoryName,
       brand: { '@type': 'Brand', name: SITE_NAME },
       url: absoluteUrl(path),
-      additionalProperty: [
-        { '@type': 'PropertyValue', name: 'Brand', value: SITE_NAME },
-        { '@type': 'PropertyValue', name: 'Barcode (GTIN)', value: product.barcode || 'N/A' },
-        { '@type': 'PropertyValue', name: 'SKU', value: skuValue },
-        { '@type': 'PropertyValue', name: 'Category', value: categoryName },
-        { '@type': 'PropertyValue', name: 'Availability', value: inStock ? 'In Stock' : 'Out of Stock' },
-        ...(Number.isFinite(stockQty)
-          ? [{ '@type': 'PropertyValue', name: 'Stock Quantity', value: String(stockQty) }]
-          : []),
-      ],
       offers: {
         '@type': 'Offer',
         url: absoluteUrl(path),
@@ -499,6 +497,7 @@ const ThemeProductDetail = () => {
           ? 'https://schema.org/InStock'
           : 'https://schema.org/OutOfStock',
         seller: { '@type': 'Organization', name: SITE_NAME },
+        ...offerExtras,
       },
     };
 
@@ -639,7 +638,7 @@ const ThemeProductDetail = () => {
     ? stockQty > 0
     : (product.stock !== undefined ? Number(product.stock) > 0 : true);
   const categoryName =
-    product.category_relation?.name || product.category || 'Decorative Bells';
+    product.category_relation?.name || product.category || 'Motorcycle Gear';
   const skuValue = product.sku || product.barcode || `SKU-${product.id}`;
 
   return (
@@ -653,15 +652,32 @@ const ThemeProductDetail = () => {
           <div className="col-lg-6">
             <div className="image-main-card">
               <div className="main-view-img">
-                <img 
-                  src={product.images?.[selectedImage] || product.image_url || '/placeholder.png'} 
-                  alt={product.name} className="img-fluid" 
+                <img
+                  src={galleryImage(product.images?.[selectedImage] || product.image_url, 1000) || '/placeholder.png'}
+                  srcSet={cloudinarySrcSet(product.images?.[selectedImage] || product.image_url, [600, 1000, 1400])}
+                  sizes="(max-width: 992px) 100vw, 50vw"
+                  width={1000}
+                  height={1000}
+                  alt={product.name}
+                  className="img-fluid"
+                  fetchPriority="high"
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
               <div className="thumb-row mt-3 d-flex gap-2">
                 {(product.images && product.images.length > 0 ? product.images : [product.image_url]).map((img, i) => (
-                  <img key={i} src={img} className={`thumb-img ${selectedImage === i ? 'active' : ''}`} 
-                  onClick={() => setSelectedImage(i)} />
+                  <img
+                    key={i}
+                    src={cardImage(img) || img}
+                    width={75}
+                    height={75}
+                    alt={`${product.name} view ${i + 1}`}
+                    className={`thumb-img ${selectedImage === i ? 'active' : ''}`}
+                    loading="lazy"
+                    decoding="async"
+                    onClick={() => setSelectedImage(i)}
+                  />
                 ))}
               </div>
             </div>

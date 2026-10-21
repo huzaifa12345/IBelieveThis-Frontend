@@ -8,7 +8,7 @@ import SideDrawer from '../components/SideDrawer';
 import ThemeFooter from '../components/ThemeFooter';
 import TopBar from '../components/TopBar';
 import FilterBar from '../components/FilterBar';
-import { productPath, setPageSeo } from '../utils/seo';
+import { productPath, setPageSeo, injectJsonLd, removeJsonLd, absoluteUrl, SITE_NAME } from '../utils/seo';
 import './DynamicCategory.css';
 
 const DynamicCategory = () => {
@@ -17,6 +17,7 @@ const DynamicCategory = () => {
   const { addToCart } = useCart();
   
   const [category, setCategory] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,28 +25,49 @@ const DynamicCategory = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
-
-  useEffect(() => {
-    if (!category) return;
-    setPageSeo({
-      title: category.name,
-      description: category.description || `Shop ${category.name} at IBelieveThis — American-made decorative bells and home accents.`,
-      path: `/category/${categorySlug}`,
-    });
-  }, [category, categorySlug]);
   const [sortBy, setSortBy] = useState('created_at');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   useEffect(() => {
+    if (!category) return;
+    const path = `/category/${categorySlug}`;
+    setPageSeo({
+      title: category.name,
+      description:
+        category.description ||
+        `Shop ${category.name} at ${SITE_NAME} — motorcycle guardian bells, biker boots, jackets, gloves and rider gear.`,
+      path,
+    });
+    injectJsonLd('seo-breadcrumb-jsonld', {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: absoluteUrl('/') },
+        { '@type': 'ListItem', position: 2, name: 'Shop', item: absoluteUrl('/all-products') },
+        { '@type': 'ListItem', position: 3, name: category.name, item: absoluteUrl(path) },
+      ],
+    });
+    return () => removeJsonLd('seo-breadcrumb-jsonld');
+  }, [category, categorySlug]);
+
+  useEffect(() => {
     const fetchCategoryData = async () => {
       try {
         setLoading(true);
+        setNotFound(false);
         const categoryData = await themeApi.getCategoryById(categorySlug);
-        setCategory(categoryData);
+        if (!categoryData || categoryData.error || categoryData.success === false) {
+          setNotFound(true);
+          setCategory(null);
+          return;
+        }
+        setCategory(categoryData.data || categoryData);
       } catch (error) {
-        toast.error('Failed to load category');
-        navigate('/home');
+        setNotFound(true);
+        setCategory(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -110,10 +132,15 @@ const DynamicCategory = () => {
     setCurrentPage(1); 
   };
 
+  if (notFound) {
+    navigate('/404', { replace: true });
+    return null;
+  }
+
   if (loading) return (
     <div className="ct-loader-wrapper d-flex flex-column justify-content-center align-items-center vh-100">
       <div className="spinner-border text-primary" role="status"></div>
-      <p className="mt-3 fw-bold text-navy">Loading Bells Catalog...</p>
+      <p className="mt-3 fw-bold text-white">Loading catalog…</p>
     </div>
   );
 

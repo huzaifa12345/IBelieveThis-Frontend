@@ -1,7 +1,8 @@
-export const SITE_URL = 'https://ibelievethis.us';
+export const SITE_URL = 'https://www.ibelievethis.us';
 export const SITE_NAME = 'IBelieveThis';
-export const SITE_TAGLINE = 'Motorcycle Leather Gear, Jackets, Gloves & Biker Boots';
-export const SITE_OG_IMAGE = `${SITE_URL}/IBelieveThis.png`;
+export const SITE_TAGLINE =
+  'US biker gear — motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats & patches';
+export const SITE_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 /**
  * SEO-friendly slug from a product/category name.
@@ -39,6 +40,7 @@ export function absoluteUrl(path = '/') {
 export function categoryPath(category) {
   if (!category) return '/all-products';
   if (category.slug) return `/category/${category.slug}`;
+  if (category.name) return `/category/${slugify(category.name)}`;
   if (category.id) return `/category/${category.id}`;
   return '/all-products';
 }
@@ -89,6 +91,8 @@ export function setPageSeo({
   upsert('meta[property="og:type"]', { property: 'og:type', content: type });
   upsert('meta[property="og:site_name"]', { property: 'og:site_name', content: SITE_NAME });
   upsert('meta[property="og:image"]', { property: 'og:image', content: imageUrl });
+  upsert('meta[property="og:image:width"]', { property: 'og:image:width', content: '1200' });
+  upsert('meta[property="og:image:height"]', { property: 'og:image:height', content: '630' });
 
   upsert('meta[name="twitter:card"]', { name: 'twitter:card', content: 'summary_large_image' });
   upsert('meta[name="twitter:title"]', { name: 'twitter:title', content: fullTitle });
@@ -109,4 +113,46 @@ export function injectJsonLd(id, data) {
 
 export function removeJsonLd(id) {
   document.getElementById(id)?.remove();
+}
+
+/** Product Offer JSON-LD extras required by merchant listings */
+export function buildProductOfferExtras() {
+  return {
+    shippingDetails: {
+      '@type': 'OfferShippingDetails',
+      shippingRate: {
+        '@type': 'MonetaryAmount',
+        value: '0',
+        currency: 'USD',
+      },
+      shippingDestination: {
+        '@type': 'DefinedRegion',
+        addressCountry: 'US',
+      },
+      deliveryTime: {
+        '@type': 'ShippingDeliveryTime',
+        handlingTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 0,
+          maxValue: 2,
+          unitCode: 'DAY',
+        },
+        transitTime: {
+          '@type': 'QuantitativeValue',
+          minValue: 3,
+          maxValue: 7,
+          unitCode: 'DAY',
+        },
+      },
+    },
+    hasMerchantReturnPolicy: {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'US',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 7,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/FreeReturn',
+      refundType: 'https://schema.org/FullRefund',
+    },
+  };
 }

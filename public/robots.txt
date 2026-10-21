@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# Block private / transactional surfaces from answer & search engines
+# Block private / transactional surfaces
 Disallow: /admin
 Disallow: /checkout
 Disallow: /login
@@ -9,4 +9,4 @@ Disallow: /register
 Disallow: /change-password
 Disallow: /cart
 
-Sitemap: https://ibelievethis.us/sitemap.xml
+Sitemap: https://www.ibelievethis.us/sitemap.xml

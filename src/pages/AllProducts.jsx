@@ -23,7 +23,7 @@ const AllProducts = () => {
   useEffect(() => {
     setPageSeo({
       title: 'Shop All Products',
-      description: 'Browse the full IBelieveThis catalog — decorative bells, apparel accents, and American-made home collections.',
+      description: 'Browse the full IBelieveThis catalog — motorcycle guardian bells, biker boots, jackets, riding gloves, cowboy hats and patches.',
       path: '/all-products',
     });
   }, []);

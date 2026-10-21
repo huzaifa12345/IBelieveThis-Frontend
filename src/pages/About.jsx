@@ -2,13 +2,21 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SideDrawer from '../components/SideDrawer';
-import { SITE_NAME } from '../utils/seo';
+import { SITE_NAME, setPageSeo } from '../utils/seo';
 import '../assets/css/InfoPages.css';
 
 const About = () => {
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    setPageSeo({
+      title: 'About',
+      description: `${SITE_NAME} — US biker gear shop for motorcycle guardian bells, boots, jackets, gloves, hats and patches.`,
+      path: '/about',
+    });
+  }, []);
 
   return (
     <div className="info-page-wrapper">
