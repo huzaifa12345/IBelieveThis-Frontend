@@ -33,8 +33,6 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/((?!assets/).*)", "destination": "/index.html" }
   ],
-  // Hobby plan: cron disabled. Re-enable on Pro:
-  // "crons": [{ "path": "/api/keepalive", "schedule": "*/10 * * * *" }],
   "cleanUrls": true,
   "trailingSlash": false
 }
