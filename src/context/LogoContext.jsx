@@ -3,6 +3,8 @@ import websiteSettingsApi from '../services/websiteSettingsApi';
 
 const LogoContext = createContext();
 
+const FALLBACK_LOGO = '/IBelieveThis.png';
+
 export const useLogo = () => {
   const context = useContext(LogoContext);
   if (!context) {
@@ -12,7 +14,7 @@ export const useLogo = () => {
 };
 
 export const LogoProvider = ({ children }) => {
-  const [websiteLogo, setWebsiteLogo] = useState('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjQwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZjNmNGY2Ii8+Cjx0ZXh0IHg9IjEyMCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxvZ288L3RleHQ+Cjwvc3ZnPg==');
+  const [websiteLogo, setWebsiteLogo] = useState(FALLBACK_LOGO);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,27 +25,29 @@ export const LogoProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await websiteSettingsApi.getWebsiteSettings();
-      
       if (response.success && response.data) {
-        // Look for logo setting in general or logo category
-        const logoCategories = response.data.general || response.data.logo || [];
-        const logoSetting = logoCategories.find(s => s.key === 'website_logo');
-        
-        if (logoSetting && logoSetting.value) {
-          setWebsiteLogo(logoSetting.value);
-          console.log('LogoContext: Updated website logo:', logoSetting.value);
+        const all = Object.values(response.data).flatMap((list) =>
+          Array.isArray(list) ? list : []
+        );
+        const logoSetting = all.find((s) => s.key === 'website_logo');
+        const value = logoSetting?.value;
+        // Ignore grey "Logo" SVG placeholders
+        if (value && !String(value).includes('>Logo</text>')) {
+          setWebsiteLogo(value);
+        } else {
+          setWebsiteLogo(FALLBACK_LOGO);
         }
       }
     } catch (error) {
       console.error('LogoContext: Error fetching website logo:', error);
+      setWebsiteLogo(FALLBACK_LOGO);
     } finally {
       setLoading(false);
     }
   };
 
   const updateLogo = (newLogo) => {
-    setWebsiteLogo(newLogo);
-    console.log('LogoContext: Logo updated to:', newLogo);
+    setWebsiteLogo(newLogo || FALLBACK_LOGO);
   };
 
   return (

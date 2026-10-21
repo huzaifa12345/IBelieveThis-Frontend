@@ -156,10 +156,7 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
           <div className="ts-nav-center mx-auto">
             <Link to="/">
               <img
-                src={
-                  websiteLogo ||
-                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjQwIDgwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMjQwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjZjNmNGY2Ii8+Cjx0ZXh0IHg9IjEyMCIgeT0iNDAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzMzMzMzMyIgdGV4dC1hYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Mb2dvPC90ZXh0Pgo8L3N2Zz4='
-                }
+                src={websiteLogo || '/IBelieveThis.png'}
                 alt="IBelieveThis"
                 className="ts-logo"
               />
@@ -185,31 +182,30 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
 
           <ul className="ts-nav-links d-none d-lg-flex m-0 p-0">
             <li className="ts-nav-item">
-              <Link to="/contact" className={`ts-nav-link ${isActive('/contact')}`}>
-                CONTACT
+              <Link to="/" className={`ts-nav-link ${isActive('/')}`}>
+                HOME
               </Link>
             </li>
 
             <li className="ts-nav-item ts-dropdown">
               <span className="ts-nav-link">
-                CART <FaChevronDown className="ts-arrow-icon" />
+                SHOP <FaChevronDown className="ts-arrow-icon" />
               </span>
               <ul className="ts-dropdown-menu">
                 <li>
-                  <Link to="/checkout" className="ts-dropdown-item">
-                    Secure Checkout Page
-                  </Link>
-                </li>
-                <li>
                   <Link to="/all-products" className="ts-dropdown-item">
-                    Shop
+                    All Products
                   </Link>
                 </li>
-                <li>
-                  <Link to="/return-policy" className="ts-dropdown-item">
-                    Return Policy
-                  </Link>
-                </li>
+                {categories && categories.length > 0 ? (
+                  categories.map((category) => (
+                    <li key={category.id || category._id}>
+                      <Link to={categoryPath(category)} className="ts-dropdown-item">
+                        {category.name}
+                      </Link>
+                    </li>
+                  ))
+                ) : null}
               </ul>
             </li>
 
@@ -219,30 +215,9 @@ const TopBar = ({ onMenuToggle, categories: parentCategories }) => {
               </Link>
             </li>
 
-            <li className="ts-nav-item ts-dropdown">
-              <span className="ts-nav-link">
-                SHOP PRODUCTS <FaChevronDown className="ts-arrow-icon" />
-              </span>
-              <ul className="ts-dropdown-menu">
-                {categories && categories.length > 0 ? (
-                  categories.map((category) => (
-                    <li key={category.id || category._id}>
-                      <Link to={categoryPath(category)} className="ts-dropdown-item">
-                        {category.name}
-                      </Link>
-                    </li>
-                  ))
-                ) : (
-                  <li>
-                    <span className="ts-dropdown-item text-muted">No Categories</span>
-                  </li>
-                )}
-              </ul>
-            </li>
-
             <li className="ts-nav-item">
-              <Link to="/" className={`ts-nav-link ${isActive('/')}`}>
-                HOME
+              <Link to="/contact" className={`ts-nav-link ${isActive('/contact')}`}>
+                CONTACT
               </Link>
             </li>
           </ul>

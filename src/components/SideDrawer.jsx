@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   X, Home, ShoppingBag, User, LogOut,
-  LayoutDashboard, Info, RotateCcw, ShoppingCart
+  LayoutDashboard, Info, RotateCcw, ShoppingCart, Truck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLogo } from '../context/LogoContext';
@@ -72,16 +72,22 @@ const SideDrawer = ({ isOpen, onClose }) => {
                   <Home className="nav-icon" size={18} /> Home
                 </Link>
                 <Link to="/all-products" className="drawer-link" onClick={onClose}>
-                  <ShoppingBag className="nav-icon" size={18} /> Shop Products
+                  <ShoppingBag className="nav-icon" size={18} /> Shop
+                </Link>
+                <Link to="/about" className="drawer-link" onClick={onClose}>
+                  <Info className="nav-icon" size={18} /> About
+                </Link>
+                <Link to="/contact" className="drawer-link" onClick={onClose}>
+                  <Info className="nav-icon" size={18} /> Contact
                 </Link>
                 <Link to="/cart" className="drawer-link" onClick={onClose}>
                   <ShoppingCart className="nav-icon" size={18} /> Cart
                 </Link>
-                <Link to="/about" className="drawer-link" onClick={onClose}>
-                  <Info className="nav-icon" size={18} /> About Us
-                </Link>
                 <Link to="/return-policy" className="drawer-link" onClick={onClose}>
                   <RotateCcw className="nav-icon" size={18} /> Return Policy
+                </Link>
+                <Link to="/shipping-policy" className="drawer-link" onClick={onClose}>
+                  <Truck className="nav-icon" size={18} /> Shipping Policy
                 </Link>
               </div>
 

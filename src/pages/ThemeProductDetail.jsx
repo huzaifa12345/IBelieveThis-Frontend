@@ -351,7 +351,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaStar, FaTruck, FaShoppingCart, FaShieldAlt, FaInfoCircle, FaCheckCircle } from 'react-icons/fa';
+import { FaStar, FaTruck, FaShoppingCart, FaShieldAlt, FaInfoCircle, FaCheckCircle, FaUndo, FaLock } from 'react-icons/fa';
 import { ShoppingCart, Star, Truck, Shield } from 'lucide-react';
 import { themeApi } from '../services/themeApi';
 import toast from 'react-hot-toast';
@@ -360,6 +360,8 @@ import { useCart } from '../context/CartContext';
 import { useLogo } from '../context/LogoContext';
 import TopBar from '../components/TopBar';
 import ThemeFooter from '../components/ThemeFooter';
+import ProductDescription from '../components/ProductDescription';
+import { useStoreSettings } from '../hooks/useStoreSettings';
 import {
   productPath,
   productPathSlug,
@@ -387,6 +389,9 @@ const ThemeProductDetail = () => {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState({ name: '', rating: '', comment: '', review_images: [] });
   const [sideDrawerOpen, setSideDrawerOpen] = useState(false);
+  const [shipOpen, setShipOpen] = useState(false);
+  const { get } = useStoreSettings();
+  const returnDays = get('return_window_days', '7');
 
   const themeColor = "#001d3d"; // Navy Blue
 
@@ -400,10 +405,7 @@ const ThemeProductDetail = () => {
       const sizesData = await themeApi.getSizes();
       setSizes(sizesData);
     } catch (error) {
-      setSizes([
-        { id: 1, size: '500ml' }, { id: 2, size: '1L' }, { id: 3, size: '5L' },
-        { id: 4, size: '10L' }, { id: 5, size: '25L' }, { id: 6, size: '50L' }
-      ]);
+      setSizes([]);
     }
   };
 
@@ -689,19 +691,28 @@ const ThemeProductDetail = () => {
               <span className="category-badge">{categoryName}</span>
               <h1 className="product-main-title">{product.name}</h1>
               
-              <div className="d-flex align-items-center gap-2 mb-3">
-                <div className="star-rating-box">
-                  {[...Array(5)].map((_, s) => (
-                    <FaStar 
-                      key={s} 
-                      className="me-1" 
-                      color={reviews.length > 0 ? (s < Math.round(reviews.reduce((a,b)=>a+b.rating,0)/reviews.length)) ? "#ffc300" : "#e0e0e0" : "#e0e0e0"} 
-                    />
-                  ))}
-                  <span className="ms-2">{reviews.length > 0 ? (reviews.reduce((a,b)=>a+b.rating,0)/reviews.length).toFixed(1) : "N/A"}</span>
+              {reviews.length > 0 && (
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <div className="star-rating-box">
+                    {[...Array(5)].map((_, s) => {
+                      const avg = reviews.reduce((a, b) => a + b.rating, 0) / reviews.length;
+                      return (
+                        <FaStar
+                          key={s}
+                          className="me-1"
+                          color={s < Math.round(avg) ? '#ffc300' : '#e0e0e0'}
+                        />
+                      );
+                    })}
+                    <span className="ms-2">
+                      {(reviews.reduce((a, b) => a + b.rating, 0) / reviews.length).toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="text-muted">
+                    ({reviews.length} review{reviews.length === 1 ? '' : 's'})
+                  </span>
                 </div>
-                <span className="text-muted">({reviews.length} Verified Reviews)</span>
-              </div>
+              )}
 
               <div className="price-display mb-3">
                 {(() => {
@@ -741,7 +752,7 @@ const ThemeProductDetail = () => {
                 </h2>
                 
                 {product.description ? (
-                  <p className="description-text">{product.description}</p>
+                  <ProductDescription text={product.description} className="description-text" />
                 ) : null}
                 <table className="table table-bordered text-start small mb-3 spec-table mt-3">
                   <tbody>
@@ -818,7 +829,7 @@ const ThemeProductDetail = () => {
                 </div>
               )}
 
-              <div className="action-row mb-5">
+              <div className="action-row mb-3">
                 <div className="qty-input">
                   <button type="button" onClick={() => setQuantity(q => Math.max(1, q-1))}>-</button>
                   <input type="number" value={quantity} readOnly aria-label="Quantity" />
@@ -834,10 +845,33 @@ const ThemeProductDetail = () => {
                 </div>
               </div>
 
-              {/* <div className="trust-grid row g-3">
-                <div className="col-6"><div className="trust-item"><FaTruck /> <span>Fast Delivery</span></div></div>
-                <div className="col-6"><div className="trust-item"><FaShieldAlt /> <span>Quality Lab Tested</span></div></div>
-              </div> */}
+              <div className="pdp-trust-row mb-4">
+                <span><FaTruck /> Fast US Shipping</span>
+                <span><FaUndo /> {returnDays}-Day Returns</span>
+                <span><FaLock /> Secure Checkout</span>
+              </div>
+
+              <div className="pdp-accordion mb-5">
+                <button
+                  type="button"
+                  className="pdp-accordion-toggle"
+                  aria-expanded={shipOpen}
+                  onClick={() => setShipOpen((v) => !v)}
+                >
+                  Shipping &amp; Returns
+                </button>
+                {shipOpen && (
+                  <div className="pdp-accordion-body">
+                    <p>
+                      Processing and delivery details are in our{' '}
+                      <Link to="/shipping-policy">Shipping Policy</Link>. Returns are accepted within{' '}
+                      <strong>{returnDays} days</strong> of delivery — see the{' '}
+                      <Link to="/return-policy">Return &amp; Exchange Policy</Link> or{' '}
+                      <Link to="/contact">Contact</Link> us for help.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

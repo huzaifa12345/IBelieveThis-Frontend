@@ -454,3 +454,19 @@
     background: var(--brand-gold);
   }
 }
+
+@media (max-width: 390px) {
+  .ts-brand-banner {
+    padding: 14px 0;
+  }
+
+  .ts-logo {
+    height: 64px;
+    max-width: min(220px, 62vw);
+  }
+
+  .ts-brand-banner .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

@@ -610,3 +610,84 @@
     height: clamp(480px, 36vw, 680px);
   }
 }
+
+.pdp-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.pdp-trust-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pdp-accordion-toggle {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f1f5f9;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.pdp-accordion-body {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.pdp-accordion-body a {
+  color: var(--brand-gold, #3b8fd4);
+}
+
+.description-text .desc-list {
+  padding-left: 1.2rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.description-text .desc-heading {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.75rem 0 0.35rem;
+  color: #f8fafc;
+}
+
+.description-text .desc-para {
+  margin: 0 0 0.65rem;
+  white-space: pre-line;
+}
+
+@media (max-width: 390px) {
+  .main-view-img {
+    height: min(320px, 70vw);
+  }
+
+  .size-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .size-btn {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .pdp-trust-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-buttons .btn {
+    width: 100%;
+  }
+}
