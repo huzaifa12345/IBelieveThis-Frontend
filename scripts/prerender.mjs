@@ -125,11 +125,11 @@ function writeRoute(relPath, html) {
 }
 
 function withSeoBody(html, inner) {
+  // Keep product/name text in HTML for crawlers/curl — never visible in the UI
   const block = `
-  <div id="seo-prerender" style="max-width:960px;margin:1.5rem auto;padding:1rem;color:#f5f5f5;font-family:system-ui,sans-serif">
+  <div id="seo-prerender" hidden aria-hidden="true" style="display:none!important;position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0">
     ${inner}
-  </div>
-  <script>document.addEventListener('DOMContentLoaded',function(){var el=document.getElementById('seo-prerender');if(el)el.setAttribute('aria-hidden','true');});</script>`;
+  </div>`;
   return html.replace('<div id="root"></div>', `${block}\n    <div id="root"></div>`);
 }
 

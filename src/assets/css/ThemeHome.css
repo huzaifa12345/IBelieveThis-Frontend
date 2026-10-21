@@ -275,16 +275,17 @@
 }
 
 /* --- Professional Product Cards --- */
+/* Normal desktop: 3 per row; big screens only: 4 */
 .product-grid-modern {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 28px;
 }
 
-@media (max-width: 1199px) {
+@media (min-width: 1600px) {
     .product-grid-modern {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 22px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 28px;
     }
 }
 
@@ -372,6 +373,7 @@
 
 .item-details {
     padding: 20px 8px 10px 8px;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
@@ -469,6 +471,7 @@
     font-weight: 700;
     color: var(--ts-white) !important;
     margin-bottom: 10px;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

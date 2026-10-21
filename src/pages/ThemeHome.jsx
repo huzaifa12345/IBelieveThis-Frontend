@@ -314,9 +314,9 @@ const ThemeHome = () => {
                                 <div key={product.id} className="item-card">
                                     <div className="item-thumb">
                                         <img
-                                          src={cardImage(product.images?.[0] || product.image_url) || '/src/assets/images/tshirt-img.png'}
+                                          src={cardImage(product.images?.[0] || product.image_url) || product.images?.[0] || product.image_url || '/src/assets/images/tshirt-img.png'}
                                           srcSet={cloudinarySrcSet(product.images?.[0] || product.image_url, [320, 400, 640])}
-                                          sizes="(max-width: 768px) 45vw, 22vw"
+                                          sizes="(max-width: 768px) 45vw, (max-width: 1599px) 30vw, 22vw"
                                           width={400}
                                           height={400}
                                           loading="lazy"
