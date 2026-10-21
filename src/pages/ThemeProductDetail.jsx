@@ -724,13 +724,13 @@ const ThemeProductDetail = () => {
                   decoding="async"
                 />
               </div>
-              <div className="thumb-row mt-3 d-flex gap-2">
+              <div className="thumb-row mt-3 d-flex gap-2" role="list">
                 {(product.images && product.images.length > 0 ? product.images : [product.image_url]).map((img, i) => (
                   <img
                     key={i}
                     src={cardImage(img) || img}
-                    width={75}
-                    height={75}
+                    width={58}
+                    height={58}
                     alt={`${product.name} view ${i + 1}`}
                     className={`thumb-img ${selectedImage === i ? 'active' : ''}`}
                     loading="lazy"
