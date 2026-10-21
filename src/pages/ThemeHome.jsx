@@ -98,6 +98,11 @@ const ThemeHome = () => {
         };
     }, [settings]);
 
+    // No hero image → unblock catalog / shell immediately
+    useEffect(() => {
+        if (!heroSlides[0]?.image) setHeroReady(true);
+    }, [heroSlides]);
+
     // Drop fixed LCP shell only after React hero has painted (shell is outside #root)
     useEffect(() => {
         const shell = document.getElementById('lcp-hero-shell');
@@ -112,13 +117,17 @@ const ThemeHome = () => {
             return undefined;
         }
         // Failsafe: never leave the overlay stuck
-        const t = window.setTimeout(() => shell.remove(), 4000);
+        const t = window.setTimeout(() => {
+            shell.remove();
+            setHeroReady(true);
+        }, 4000);
         return () => window.clearTimeout(t);
     }, [heroReady]);
 
-    // Hero settings — do not block first paint if bootstrap image exists
+    // Hero settings — if bootstrap exists, wait for LCP before API (bandwidth)
     useEffect(() => {
         let cancelled = false;
+        const hasBoot = Boolean(readBootstrapHero()?.image);
         const fetchHeroSlides = async () => {
             try {
                 const response = await websiteSettingsApi.getWebsiteSettings();
@@ -137,11 +146,14 @@ const ThemeHome = () => {
                 console.error('Error fetching hero slides:', error);
             }
         };
-        fetchHeroSlides();
+        if (hasBoot && !heroReady) return undefined;
+        const delay = hasBoot ? 100 : 0;
+        const t = window.setTimeout(fetchHeroSlides, delay);
         return () => {
             cancelled = true;
+            window.clearTimeout(t);
         };
-    }, []);
+    }, [heroReady]);
 
     const handleNextSlide = useCallback(() => {
         setCurrentSlide((prev) => (prev + 1) % Math.max(heroSlides.length, 1));
@@ -158,7 +170,9 @@ const ThemeHome = () => {
         return () => clearInterval(interval);
     }, [heroReady, heroSlides.length, handleNextSlide]);
 
+    // Catalog + product images wait until LCP hero has painted (frees Slow 4G bandwidth)
     useEffect(() => {
+        if (!heroReady) return undefined;
         let cancelled = false;
         const fetchData = async () => {
             try {
@@ -185,15 +199,16 @@ const ThemeHome = () => {
                 if (!cancelled) setCatalogLoading(false);
             }
         };
-        fetchData();
+        const t = window.setTimeout(fetchData, 50);
         return () => {
             cancelled = true;
+            window.clearTimeout(t);
         };
-    }, []);
+    }, [heroReady]);
 
     const slide = heroSlides[currentSlide] || heroSlides[0] || DEFAULT_HERO;
     const isFirstPaintSlide = currentSlide === 0;
-    const heroSrc = heroImage(slide.image, 800) || slide.image;
+    const heroSrc = heroImage(slide.image, 640) || slide.image;
     const heroSet = slide.image ? heroSrcSet(slide.image) : undefined;
 
     return (
@@ -242,12 +257,12 @@ const ThemeHome = () => {
                                 {heroSrc ? (
                                   <img
                                     key={slide.image || currentSlide}
-                                    src={isFirstPaintSlide ? (heroImage(slide.image, 400) || heroSrc) : heroSrc}
-                                    srcSet={heroSet}
-                                    sizes="100vw"
+                                    src={heroSrc}
+                                    srcSet={isFirstPaintSlide ? undefined : heroSet}
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                     alt={slide.title || 'IBelieveThis hero'}
-                                    width={1200}
-                                    height={800}
+                                    width={640}
+                                    height={427}
                                     fetchPriority={isFirstPaintSlide ? 'high' : 'auto'}
                                     loading={isFirstPaintSlide ? 'eager' : 'lazy'}
                                     decoding="async"

@@ -181,24 +181,32 @@
 
 .floating-badge {
     position: absolute;
-    bottom: 40px;
-    left: -10px;
+    bottom: 16px;
+    left: 8px;
     background: var(--ts-white);
-    padding: 18px 28px;
-    border-radius: 20px;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    padding: 6px 12px;
+    border-radius: 999px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 6px;
+    font-size: 0.72rem;
     font-weight: 700;
+    line-height: 1.2;
     color: var(--ts-cyan);
     z-index: 5;
     animation: float 4s ease-in-out infinite;
 }
 
+.floating-badge svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
+}
+
 @keyframes float {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
+    50% { transform: translateY(-6px); }
 }
 
 /* --- Slider Arrows --- */

@@ -18,7 +18,14 @@ export const LogoProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchWebsiteLogo();
+    // Defer logo API so it does not compete with hero LCP on Slow 4G
+    const run = () => fetchWebsiteLogo();
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(run, { timeout: 2500 });
+      return () => cancelIdleCallback(id);
+    }
+    const t = window.setTimeout(run, 1200);
+    return () => window.clearTimeout(t);
   }, []);
 
   const fetchWebsiteLogo = async () => {

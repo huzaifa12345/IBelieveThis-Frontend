@@ -12,13 +12,13 @@ export function isCloudinaryUrl(url) {
 
 /**
  * @param {string} url
- * @param {{ width?: number, height?: number, crop?: string }} [opts]
+ * @param {{ width?: number, height?: number, crop?: string, quality?: string }} [opts]
  */
 export function cloudinaryUrl(url, opts = {}) {
   if (!url || !isCloudinaryUrl(url)) return url || '';
 
-  const { width, height, crop = 'limit' } = opts;
-  const transforms = ['f_auto', 'q_auto'];
+  const { width, height, crop = 'limit', quality = 'auto' } = opts;
+  const transforms = ['f_auto', `q_${quality}`];
   if (width) transforms.push(`w_${Math.round(width)}`);
   if (height) transforms.push(`h_${Math.round(height)}`);
   if (width || height) transforms.push(`c_${crop}`);
@@ -55,30 +55,35 @@ export function galleryImage(url, width = 800) {
  * srcSet for responsive images
  * @param {string} url
  * @param {number[]} widths
- * @param {{ crop?: string, height?: number }} [opts]
+ * @param {{ crop?: string, height?: number, quality?: string }} [opts]
  */
 export function cloudinarySrcSet(url, widths = [400, 800, 1200], opts = {}) {
   if (!isCloudinaryUrl(url)) return undefined;
-  const { crop = 'limit', height } = opts;
+  const { crop = 'limit', height, quality } = opts;
   return widths
     .map((w) => {
       const transformed = cloudinaryUrl(url, {
         width: w,
         height: height ? Math.round((height / widths[widths.length - 1]) * w) : undefined,
         crop,
+        quality,
       });
       return `${transformed} ${w}w`;
     })
     .join(', ');
 }
 
-/** Hero LCP: 400 / 800 / 1200 */
+/**
+ * Hero display srcset — cap at 640w so mobile DPR cannot pull 1200w on Slow 4G.
+ * (412 CSS px × 2.6 DPR ≈ 1070 → would otherwise pick 1200w / ~110KB)
+ */
 export function heroSrcSet(url) {
-  return cloudinarySrcSet(url, [400, 800, 1200], { crop: 'limit' });
+  return cloudinarySrcSet(url, [400, 640], { crop: 'limit', quality: 'auto:eco' });
 }
 
-export function heroImage(url, width = 800) {
-  return cloudinaryUrl(url, { width, crop: 'limit' }) || url || '';
+/** LCP / first-paint hero URL (640w eco). */
+export function heroImage(url, width = 640) {
+  return cloudinaryUrl(url, { width, crop: 'limit', quality: 'auto:eco' }) || url || '';
 }
 
 /** Product / category cards: 300 / 600 */
@@ -89,14 +94,15 @@ export function cardSrcSet(url) {
     .join(', ');
 }
 
-/** Build preload attrs for first hero slide (prerender / head). Mobile-first href (400w). */
+/**
+ * Preload a SINGLE small hero URL (no imagesrcset).
+ * imagesrcset + 100vw on retina phones selects 1200w and kills LCP on Slow 4G.
+ */
 export function heroPreloadAttrs(url) {
   if (!url) return null;
-  const href = heroImage(url, 400);
-  const imagesrcset = heroSrcSet(url);
   return {
-    href,
-    imagesrcset: imagesrcset || undefined,
-    imagesizes: '100vw',
+    href: heroImage(url, 640),
+    imagesrcset: undefined,
+    imagesizes: undefined,
   };
 }

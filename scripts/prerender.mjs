@@ -104,10 +104,9 @@ function injectHead(html, { title, description, path: pagePath, image, jsonLd, t
   );
   out = out.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${escapeHtml(img)}" />`);
 
+  // Single-URL preload (no imagesrcset) — retina + 100vw was selecting 1200w on mobile
   const preloadTag = heroPreload?.href
-    ? `<link rel="preload" as="image" href="${escapeHtml(heroPreload.href)}"${
-        heroPreload.imagesrcset ? ` imagesrcset="${escapeHtml(heroPreload.imagesrcset)}"` : ''
-      } imagesizes="100vw" fetchpriority="high" />`
+    ? `<link rel="preload" as="image" href="${escapeHtml(heroPreload.href)}" fetchpriority="high" />`
     : '';
   const bootstrapTag = heroBootstrap?.image
     ? `<script>window.__HERO_BOOTSTRAP__=${JSON.stringify({
@@ -168,8 +167,7 @@ function injectLcpHeroShell(html, hero) {
   if (!hero?.image) {
     return html.replace(/\s*<!-- LCP_HERO_SHELL[^>]*-->\s*/i, '\n    ');
   }
-  const src = escapeHtml(heroImage(hero.image, 400));
-  const srcset = escapeHtml(heroSrcSet(hero.image) || '');
+  const src = escapeHtml(heroImage(hero.image, 640));
   const alt = escapeHtml(hero.title || 'IBelieveThis');
   const shell = `<div id="lcp-hero-shell" aria-hidden="true">
 <style>
@@ -178,10 +176,8 @@ function injectLcpHeroShell(html, hero) {
 </style>
 <img
   src="${src}"
-  srcset="${srcset}"
-  sizes="100vw"
-  width="1200"
-  height="800"
+  width="640"
+  height="427"
   alt="${alt}"
   fetchpriority="high"
   loading="eager"
