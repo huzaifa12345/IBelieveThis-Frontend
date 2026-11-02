@@ -78,7 +78,11 @@ export const themeApi = {
 
   // Products
   getProducts: async (params = {}) => {
-    const response = await api.get('/products', { params });
+    // Admin: cache-bust with _ts only (extra Cache-Control headers break CORS preflight)
+    const isAdminList = params.include_inactive === true || params.include_inactive === 'true';
+    const response = await api.get('/products', {
+      params: isAdminList ? { ...params, _ts: Date.now() } : params,
+    });
     return response.data;
   },
 

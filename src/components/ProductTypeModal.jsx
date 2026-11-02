@@ -231,19 +231,71 @@ const ProductModal = ({
 
                       {/* Image Preview Grid */}
                       <div className="row g-2">
-                        {uploadedImages.map((img, idx) => (
-                          <div key={idx} className="col-4">
-                            <div className="position-relative rounded overflow-hidden shadow-sm" style={{ height: '70px', border: '1px solid #e2e8f0' }}>
-                              <img src={img} alt="Preview" className="w-100 h-100" style={{ objectFit: 'cover' }} />
-                              <button 
-                                className="btn btn-danger p-0 position-absolute top-0 end-0 m-1 d-flex align-items-center justify-content-center"
-                                onClick={() => removeUploadedImage(idx)}
-                                style={{ width: '18px', height: '18px', borderRadius: '4px', fontSize: '10px' }}
-                              >×</button>
+                        {(uploadedImages || []).map((img, idx) => (
+                          <div key={`${img}-${idx}`} className="col-4" style={{ paddingTop: '6px', paddingRight: '6px' }}>
+                            <div className="position-relative" style={{ height: '78px' }}>
+                              <div
+                                className="rounded shadow-sm w-100 h-100 position-relative"
+                                style={{ border: '1px solid #e2e8f0', overflow: 'hidden' }}
+                              >
+                                <img
+                                  src={img}
+                                  alt={`Product ${idx + 1}`}
+                                  className="w-100 h-100"
+                                  style={{ objectFit: 'cover', display: 'block' }}
+                                />
+                                {idx === 0 ? (
+                                  <span
+                                    className="position-absolute text-white fw-bold"
+                                    style={{
+                                      left: '6px',
+                                      bottom: '6px',
+                                      zIndex: 1,
+                                      fontSize: '0.65rem',
+                                      lineHeight: 1,
+                                      letterSpacing: '0.02em',
+                                      padding: '4px 7px',
+                                      borderRadius: '4px',
+                                      backgroundColor: 'rgba(2,132,199,0.95)',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    Cover
+                                  </span>
+                                ) : null}
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-danger border-0 position-absolute d-flex align-items-center justify-content-center shadow"
+                                title="Remove picture"
+                                aria-label={`Remove picture ${idx + 1}`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  removeUploadedImage?.(idx);
+                                }}
+                                style={{
+                                  top: '-6px',
+                                  right: '-6px',
+                                  width: '26px',
+                                  height: '26px',
+                                  borderRadius: '50%',
+                                  padding: 0,
+                                  zIndex: 3,
+                                  backgroundColor: '#dc2626',
+                                }}
+                              >
+                                <Trash2 size={13} color="#fff" />
+                              </button>
                             </div>
                           </div>
                         ))}
                       </div>
+                      {(uploadedImages || []).length === 0 ? (
+                        <p className="text-muted small mb-0 mt-1">No pictures yet. Upload at least one image.</p>
+                      ) : (
+                        <p className="text-muted small mb-0 mt-2">Click the red trash icon to remove a picture, then Update Product.</p>
+                      )}
                     </div>
 
                     {/* Batch Instructions Card */}

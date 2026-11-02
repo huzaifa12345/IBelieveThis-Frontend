@@ -105,7 +105,12 @@ const Admin = () => {
           totalRevenue: ordersRes.orders?.reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0) || 0,
         });
       } catch (error) {
-        toast.error('System Error: Data sync failed');
+        console.error('Admin data sync failed:', error);
+        toast.error(
+          error?.response?.data?.error ||
+            error?.message ||
+            'System Error: Data sync failed'
+        );
       } finally { setLoading(false); }
     };
     fetchData();
@@ -145,7 +150,12 @@ const Admin = () => {
       sizes: Array.isArray(product.sizes) ? product.sizes : [],
       status: product.is_active ? 'active' : 'inactive',
     });
-    setUploadedImages(Array.isArray(product.images) ? product.images : []);
+    const existingImages = Array.isArray(product.images) && product.images.length
+      ? product.images.filter(Boolean)
+      : product.image_url
+        ? [product.image_url]
+        : [];
+    setUploadedImages(existingImages);
     setShowProductForm(true);
   };
 
@@ -185,30 +195,59 @@ const Admin = () => {
   };
 
   const removeUploadedImage = (index) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    setUploadedImages((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      // Keep form in sync so save cannot fall back to removed URLs
+      setProductForm((form) => ({
+        ...form,
+        images: next,
+        image_url: next[0] || '',
+      }));
+      return next;
+    });
   };
 
   const handleSaveProduct = async () => {
     try {
       const sizes = Array.isArray(productForm.sizes) ? productForm.sizes : [];
       const sizeTotal = sizes.reduce((n, s) => n + (parseInt(s.quantity, 10) || 0), 0);
+      const cleanImages = (uploadedImages || []).map((u) => String(u || '').trim()).filter(Boolean);
+      // Send only editable fields — avoid spreading Sequelize extras that can confuse updates
       const productData = {
-        ...productForm,
+        name: productForm.name,
+        description: productForm.description,
         price: parseFloat(productForm.price),
+        discount_price: productForm.discount_price || null,
+        category_id: productForm.category_id,
         stock_quantity: sizes.length > 0 ? sizeTotal : parseInt(productForm.stock_quantity, 10) || 0,
         sizes,
-        image_url: uploadedImages[0] || productForm.image_url,
-        images: uploadedImages.length ? uploadedImages : (productForm.images || []),
-        is_active: productForm.status === 'active'
+        barcode: productForm.barcode || null,
+        image_url: cleanImages[0] || null,
+        images: cleanImages,
+        is_active: productForm.status === 'active',
       };
       if (editingProduct) {
-        await themeApi.updateProduct(editingProduct.id, productData);
+        const updated = await themeApi.updateProduct(editingProduct.id, productData);
+        // Patch local list immediately so re-open shows removed images without stale cache
+        setProducts((prev) =>
+          prev.map((p) =>
+            p.id === editingProduct.id
+              ? {
+                  ...p,
+                  ...(updated && typeof updated === 'object' ? updated : {}),
+                  images: cleanImages,
+                  image_url: cleanImages[0] || null,
+                }
+              : p
+          )
+        );
         toast.success('Product updated');
       } else {
         await themeApi.createProduct(productData);
         toast.success('Product created');
       }
       setShowProductForm(false);
+      setEditingProduct(null);
       setUploadedImages([]);
       const productsRes = await loadAdminProducts(productPage, searchTerm);
       setStats((prev) => ({
